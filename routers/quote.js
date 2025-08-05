@@ -13,7 +13,7 @@ export default async function quotes(req, res) {
      if (cached) return res.json({ symbol, price: cached });
 
      try {
-       const { data } = await axios.get(`https://finance.yahoo.com/quote/${symbol}`, { headers })
+       const { data } = await axios.get(`https://finance.yahoo.com/quote/${symbol}`,{ headers })
        const $ = cheerio.load(data);
 
        const price = $('span[data-testid="qsp-price"]').first().text();
@@ -26,11 +26,27 @@ export default async function quotes(req, res) {
 
 
 const getPrice = async (ticker) => {
-  const url = `https://finance.yahoo.com/quote/${ticker.toUpperCase().trim()}`;
+  const symbol = ticker.toUpperCase().trim()
+  const url = `https://finance.yahoo.com/quote/${symbol}`;
+  console.log(symbol, url)
+  try {
+     
+  
   const { data } = await axios.get(url, { headers }); // โหลด HTML
   const $ = cheerio.load(data);         // ยัดเข้า cheerio
   
   const quote = {}
+    const exchangeText = $('span.exchange').first().text().trim();
+    const marketName = exchangeText.split(" - ")[0];  // เอาก่อน '-'
+
+    // ดึงชื่อบริษัทและ ticker เช่น "NVIDIA Corporation (NVDA)"
+    const titleText = $('title').text().trim();
+    const match = titleText.match(/^(.*?) \(([^)]+)\)/);
+    let companyName = "";
+
+    if (match) {
+      companyName = match[1];  // NVIDIA Corporation
+    }     
   const price = $('span[data-testid="qsp-price"]').first().text();
   const change = $('span[data-testid="qsp-price-change"]').first().text()
   const cache = new NodeCache({stdTTL: 300})
@@ -45,7 +61,9 @@ const getPrice = async (ticker) => {
   const postChange = $('span[data-testid="qsp-post-price-change"]').first().text()
   const postChangePercent = $('span[data-testid="qsp-post-price-change-percent"]').first().text().replace(/[(),%]/g, "")
   const market = $('fin-streamer[changeev="timeChange"]').attr("data-field")
-  quote.symbol = ticker
+  quote.symbol = symbol
+  quote.longName = companyName
+  quote.exchange = marketName
   quote.price = price.trim()
   quote.change = change.trim()
   quote.changePercent = changePercent.trim()
@@ -58,8 +76,7 @@ const getPrice = async (ticker) => {
     quote.postChange = postChange.trim()
     quote.postChangePercent = postChangePercent.trim()
   }
-  
-  
+    
   const stats = {};
 
   $("fin-streamer").each((_, el) => {
@@ -75,7 +92,17 @@ const getPrice = async (ticker) => {
    
   quote.marksetState = market
   console.log(quote)
+    } catch (error) {
+console.error(error)
+    }
 };
+const url = "https://query1.finance.yahoo.com/v8/finance/chart/NVDA?range=1d&interval=2m";
 
-getPrice("TSM");
+axios.get(url).then(res => {
+  const result = res.data.chart.result[0];
+  const lastClose = result.meta.regularMarketPrice;
+  console.log(result)
+  console.log("ราคาล่าสุด BTC:", lastClose);
+});
+getPrice("NVDA");
 
