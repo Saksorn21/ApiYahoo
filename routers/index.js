@@ -75,7 +75,7 @@ export const authRouter = express.Router();
  *         description: desplay user dashboard
  */
   authRouter.get("/dashboard", authFromCookie, (req, res) =>{
-  res.json({ msg: `Hello ${req.user.user}` })
+  res.json({ msg: `Hello ${req.user.username}` })
 })
 /**
  * @swagger

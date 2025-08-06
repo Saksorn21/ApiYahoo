@@ -13,7 +13,7 @@ export const authLogin = async (req, res) => {
 
   // สร้าง token ตามเดิม (ใช้ user.username, user.role)
   const accessToken = jwt.sign(
-    { user: user.username, role: user.role },
+    { id: user._id },
     process.env.JWT_LOGIN_SECRET,
     { expiresIn: process.env.JWT_EXPIRES }
   );

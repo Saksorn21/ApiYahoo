@@ -1,12 +1,23 @@
 import jwt from "jsonwebtoken";
 import LogModel from "../models/Log.js";
-
-export const adminCheck = (req, res, next) => {
+import { User} from "../models/User.js"
+export const adminCheck = async (req, res, next) => {
   // เช็ก user ใน token ว่าเป็น "admin"
-  if (req.user?.user !== "admin") {
-    return res.status(403).json({ error: "Admin only access" });
+  const token = req.token || req.cookies.accessToken
+  if (!token) return res.status(401).json({ message: "No Token" });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET)
+    const user = await User.findById(decoded.id)
+    console.log(user)
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin only access" });
+    }
+    req.user = user
+    next();
+  } catch ( err) {
+    res.status(401).json({ message: "Invalid token" });
   }
-  next();
+  
 };
 export const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -60,6 +71,7 @@ export const authFromBearer = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
+    req.token = token
     next();
   } catch (err) {
     return res.status(403).json({ error: "Invalid token" });
