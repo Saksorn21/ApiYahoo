@@ -1,11 +1,19 @@
 import express from "express"
 import dotenv from "dotenv"
 import cors from "cors"
-import router from "./routers/index.js"
+import router, { authRouter } from "./routers/index.js"
 import { generalLimiter, loginLimiter } from "./auth/rateLimit.js";
 import adminRouter from './routers/admin.js'
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
+import rateLimit from "express-rate-limit";
+
+const swaggerLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 นาที
+  max: 20, // Swagger ไม่ควรโดน spam
+  message: "Too many requests to Swagger, chill bro 🚫🔥",
+});
+
 
 const swaggerOptions = {
   definition: {
@@ -34,9 +42,11 @@ const app = express()
 const PORT = env.PORT || 5000
 app.use(express.json())
 app.use(cors())
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.set("trust proxy", 1)
+app.use("/api-docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(generalLimiter)
 app.use("/admin", adminRouter)
+app.use("/auth", authRouter)
 app.use("/api", router)
 app.use((err, req, res, next) => {
   console.error("🔥 Server error:", err.stack);

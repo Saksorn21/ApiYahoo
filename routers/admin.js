@@ -5,20 +5,57 @@ import { authenticateToken, adminCheck } from "../auth/middleware.js";
 
 const router = express.Router();
 
-// ✅ ดู token ทั้งหมด
+/**
+ * @swagger
+ * /admin/tokens:
+ *   get:
+ *     summary: get all tokens
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 router.get("/tokens", authenticateToken, adminCheck, async (req, res) => {
   const tokens = await TokenModel.find().select("-__v");
   res.json(tokens);
 });
 
-// ✅ ลบ token by id
+
+/**
+ * @swagger
+ * /admin/token/{id}:
+ *   delete:
+ *     summary: Delete token by ID
+ *     tags: [Admin]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: Token ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ *       404:
+ *         description: Token not found
+ */
 router.delete("/token/:id", authenticateToken, adminCheck, async (req, res) => {
   const { id } = req.params;
   await TokenModel.findByIdAndDelete(id);
   res.json({ message: "Token revoked" });
 });
 
-// ✅ ดู log ล่าสุด
+/**
+ * @swagger
+ * /admin/logs:
+ *   get:
+ *     summary: Get logs
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 router.get("/logs", authenticateToken, adminCheck, async (req, res) => {
   const logs = await LogModel.find().sort({ createdAt: -1 }).limit(100);
   res.json(logs);
