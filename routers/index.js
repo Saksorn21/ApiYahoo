@@ -5,7 +5,7 @@ import { authLogout } from "../auth/logout.js"
 import { getApiToken  } from "../auth/apiToken.js"
 import { authRegister  } from "../auth/register.js"
 import { refreshToken } from "../auth/refresh.js"
-import { authFromCookie, authFromBearer, authenticateToken, bearerApiToken } from "../auth/middleware.js"
+import { authFromCookie, authFromBearer, bearerApiToken } from "../auth/middleware.js"
 const router = express.Router();
 export const authRouter = express.Router();
 /**
@@ -134,5 +134,5 @@ authRouter.post("/login", authLogin)
  *               change: -2.10
  *               changePercent: -1.19%
  */
-router.get("/quote/:symbol", authenticateToken, bearerApiToken, quote)
+router.get("/quote/:symbol", authFromBearer, bearerApiToken, quote)
 export default router

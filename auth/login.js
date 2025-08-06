@@ -23,7 +23,7 @@ export const authLogin = async (req, res) => {
     maxAge: 60 * 60 * 1000  // 1 ชม.
   })
   const refreshToken = jwt.sign(
-    { user: user.username, role: user.role },
+    { id: user._id },
     process.env.JWT_SECRET,
     { expiresIn: process.env.REFRESH_EXPIRES }
   );

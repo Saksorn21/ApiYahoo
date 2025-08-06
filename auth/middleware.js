@@ -1,6 +1,9 @@
 import jwt from "jsonwebtoken";
 import LogModel from "../models/Log.js";
-import { User} from "../models/User.js"
+import { User} from 
+"../models/User.js"
+import TokenModel from 
+"../models/Token.js"
 const findUserByToken = async (token) => {
   const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET)
   const user = await User.findById(decoded.id)
@@ -23,6 +26,10 @@ export const adminCheck = async (req, res, next) => {
   }
   
 };
+function isJwt(token) {
+  const jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/;
+  return jwtRegex.test(token);
+}
 export const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -30,7 +37,7 @@ export const authenticateToken = async (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
-
+  
   if (!token) return res.status(401).json({ error: "No token provided" });
 
   try {
@@ -48,7 +55,7 @@ export const authenticateToken = async (req, res, next) => {
 
     next();
   } catch (err) {
-    return res.status(403).json({ error: "Invalid token" });
+    return res.status(403).json({ error: err });
   }
 };
 // ตรวจ login token จาก cookie
@@ -69,12 +76,14 @@ export const authFromCookie = async (req, res, next) => {
 export const authFromBearer = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "No token" });
+    return res.status(401).json({ error: "No token " });
   }
   const token = authHeader.split(" ")[1];
+  if (!isJwt(token)) return res.status(401).json({ error: "Invalid Bearer Token format: Bearer <token>"})
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    const dataUser = User.findById(decoded.id)
+    req.user = dataUser.username
     req.token = token
     next();
   } catch (err) {
@@ -85,7 +94,7 @@ export const bearerApiToken = (req, res, next) =>{
   const token = req.token
   const user = req.user
   const storedToken = TokenModel.findOne({ refreshToken: token})
-  if (storedToken.user.user !== user) return res.status(403).json({ message: "ข้อมูลไม่ตรง"})
+  if (storedToken.user !== user) return res.status(403).json({ message: "ข้อมูลไม่ตรง"})
   const now = new Date();
   if (storedToken.expiresAt < now) {
     return res.status(403).json({ error: "Refresh token expired" });
