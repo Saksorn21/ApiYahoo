@@ -36,3 +36,32 @@ export const authenticateToken = async (req, res, next) => {
     return res.status(403).json({ error: "Invalid token" });
   }
 };
+// ตรวจ login token จาก cookie
+export const authFromCookie = (req, res, next) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json({ error: "No token" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).json({ error: "Invalid token" });
+  }
+};
+
+// ตรวจ Bearer สำหรับ API
+export const authFromBearer = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "No token" });
+  }
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).json({ error: "Invalid token" });
+  }
+};

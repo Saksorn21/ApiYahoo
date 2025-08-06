@@ -1,44 +1,40 @@
-import express from "express";
+import UserModel from "../models/User.js";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import TokenModel from "../models/Token.js";
 
-const router = express.Router();
-
-export const login = async (req, res) => {
+export const authLogin = async (req, res) => {
   const { username, password } = req.body;
-console.log("[LOGIN] ")
-  // ✅ Mock user check (Boat เพิ่ม DB ได้ทีหลัง)
-  if (username !== "boat" || password !== "1234") {
-    return res.status(401).json({ error: "Invalid credentials" });
-  }
+  const user = await UserModel.findOne({ username });
+  if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
-  // 🛡 สร้าง JWT Token
+  const valid = await bcrypt.compare(password, user.passwordHash);
+  if (!valid) return res.status(401).json({ error: "Invalid credentials" });
+
+  // สร้าง token ตามเดิม (ใช้ user.username, user.role)
   const accessToken = jwt.sign(
-    { user: username },
-    process.env.JWT_SECRET,
+    { user: user.username, role: user.role },
+    process.env.JWT_LOGIN_SECRET,
     { expiresIn: process.env.JWT_EXPIRES }
   );
-
-  // 🛡 สร้าง Refresh Token
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", // ใช้ https เท่านั้น
+    maxAge: 60 * 60 * 1000  // 1 ชม.
+  })
   const refreshToken = jwt.sign(
-    { user: username },
+    { user: user.username, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: process.env.REFRESH_EXPIRES }
   );
 
-  // 🗃 เก็บ refreshToken ลง Mongo
   const expiryDate = new Date();
-  expiryDate.setSeconds(expiryDate.getSeconds() + 7 * 24 * 60 * 60); // 7 วัน
-  try{
+  expiryDate.setDate(expiryDate.getDate() + 7);
   await TokenModel.create({
-    user: username,
+    user: user.username,
     refreshToken,
     expiresAt: expiryDate
   });
-}catch(err){
-    console.error("🔥 MongoDB error:", err)
-}
-  // ✅ ส่งคืนให้ client
+
   res.json({ accessToken, refreshToken });
 }
-

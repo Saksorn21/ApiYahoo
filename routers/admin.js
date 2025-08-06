@@ -1,8 +1,7 @@
 import express from "express";
 import TokenModel from "../models/Token.js";
 import LogModel from "../models/Log.js";
-import { authenticateToken } from "./middleware.js";
-import { adminCheck } from "./admin.js";
+import { authenticateToken, adminCheck } from "../auth/middleware.js";
 
 const router = express.Router();
 

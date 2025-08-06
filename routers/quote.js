@@ -104,5 +104,5 @@ axios.get(url).then(res => {
   console.log(result)
   console.log("ราคาล่าสุด BTC:", lastClose);
 });
-getPrice("NVDA");
+//getPrice("NVDA");
 
