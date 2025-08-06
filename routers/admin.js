@@ -1,7 +1,7 @@
 import express from "express";
 import TokenModel from "../models/Token.js";
 import LogModel from "../models/Log.js";
-import { authenticateToken, adminCheck } from "../auth/middleware.js";
+import { authFromCookie, adminCheck } from "../auth/middleware.js";
 
 const router = express.Router();
 
@@ -15,7 +15,7 @@ const router = express.Router();
  *       200:
  *         description: OK
  */
-router.get("/tokens", authenticateToken, adminCheck, async (req, res) => {
+router.get("/tokens", authFromCookie, adminCheck, async (req, res) => {
   const tokens = await TokenModel.find().select("-__v");
   res.json(tokens);
 });
@@ -40,7 +40,7 @@ router.get("/tokens", authenticateToken, adminCheck, async (req, res) => {
  *       404:
  *         description: Token not found
  */
-router.delete("/token/:id", authenticateToken, adminCheck, async (req, res) => {
+router.delete("/token/:id", authFromCookie, adminCheck, async (req, res) => {
   const { id } = req.params;
   await TokenModel.findByIdAndDelete(id);
   res.json({ message: "Token revoked" });
@@ -56,7 +56,7 @@ router.delete("/token/:id", authenticateToken, adminCheck, async (req, res) => {
  *       200:
  *         description: OK
  */
-router.get("/logs", authenticateToken, adminCheck, async (req, res) => {
+router.get("/logs", authFromCookie, adminCheck, async (req, res) => {
   const logs = await LogModel.find().sort({ createdAt: -1 }).limit(100);
   res.json(logs);
 });

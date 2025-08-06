@@ -8,6 +8,8 @@ import adminRouter from './routers/admin.js'
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
 import rateLimit from "express-rate-limit";
+import cookieParser from "cookie-parser";
+
 
 const swaggerLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 นาที
@@ -45,6 +47,7 @@ const PORT = env.PORT || 5000
 mongoose.connect(process.env.MONGO_URI);
 app.use(express.json())
 app.use(cors())
+app.use(cookieParser());
 app.set("trust proxy", 1)
 app.use("/api-docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(generalLimiter)
