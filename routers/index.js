@@ -29,7 +29,7 @@ export const authRouter = express.Router();
  *       200:
  *         description: Token returned
  */
-
+authRouter.post("/login", authLogin)
 /**
  * @swagger
  * /auth/logout:
@@ -40,7 +40,7 @@ export const authRouter = express.Router();
  *       200:
  *         description: Logout user
  */
-  authRouter.post("/login", authLogin)
+  
  authRouter.post("/logout", authFromCookie, authLogout)
 /**
  * @swagger
@@ -75,19 +75,19 @@ export const authRouter = express.Router();
  *         description: desplay user dashboard
  */
   authRouter.get("/dashboard", authFromCookie, (req, res) =>{
-  res.json({ msg: `Hello ${req.user.username}` })
+  res.json({ msg: `Hello ${req.user}` })
 })
 /**
  * @swagger
  * /auth/api-token:
- *   poat:
+ *   post:
  *     summary: get api token
  *     tags: [Auth]
  *     responses:
  *       200:
- *         description: created api token
+ *         description: get API Token
  */
-  authRouter.post("/api-token", authenticateToken, getApiToken)
+  authRouter.post("/api-token", authFromCookie, getApiToken)
 /**
  * @swagger
  * /auth/refresh:
@@ -107,7 +107,7 @@ export const authRouter = express.Router();
  *       200:
  *         description: Created a new access token
  */
-  authRouter.post("/refresh", refreshToken)
+  authRouter.post("/refresh",authFromCookie, refreshToken)
 /**
  * @swagger
  * /api/quote/{symbol}:

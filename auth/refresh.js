@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import TokenModel from "../models/Token.js";
 
 
-
+// ตรวจสอบ refresh token และสร้าง access token ใหม่ สำหละบ Bearer API
 export const refreshToken = async (req, res) => {
   const { refreshToken } = req.body;
   if (!refreshToken) return res.status(400).json({ error: "No refresh token" });
@@ -29,7 +29,7 @@ export const refreshToken = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES }
     );
 
-    res.json({ accessToken });
+    res.json({ apiToken: accessToken });
   } catch (err) {
     console.error("Refresh error:", err);
     res.status(403).json({ error: "Token error" });

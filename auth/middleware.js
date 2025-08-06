@@ -1,6 +1,11 @@
 import jwt from "jsonwebtoken";
 import LogModel from "../models/Log.js";
 import { User} from "../models/User.js"
+const findUserByToken = async (token) => {
+  const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET)
+  const user = await User.findById(decoded.id)
+  return user.username
+}
 export const adminCheck = async (req, res, next) => {
   // เช็ก user ใน token ว่าเป็น "admin"
   const token = req.token || req.cookies.accessToken
@@ -8,7 +13,6 @@ export const adminCheck = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET)
     const user = await User.findById(decoded.id)
-    console.log(user)
     if (user.role !== "admin") {
       return res.status(403).json({ error: "Admin only access" });
     }
@@ -48,13 +52,13 @@ export const authenticateToken = async (req, res, next) => {
   }
 };
 // ตรวจ login token จาก cookie
-export const authFromCookie = (req, res, next) => {
+export const authFromCookie = async (req, res, next) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json({ error: "No token" });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET);
-    req.user = decoded;
+    const user = await findUserByToken(token)
+    req.user = user;
     next();
   } catch (err) {
     return res.status(403).json({ error: "Invalid token" });
@@ -77,3 +81,4 @@ export const authFromBearer = (req, res, next) => {
     return res.status(403).json({ error: "Invalid token" });
   }
 };
+const ch
