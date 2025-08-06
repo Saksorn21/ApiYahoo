@@ -5,7 +5,7 @@ import { authLogout } from "../auth/logout.js"
 import { getApiToken  } from "../auth/apiToken.js"
 import { authRegister  } from "../auth/register.js"
 import { refreshToken } from "../auth/refresh.js"
-import { authFromCookie, authFromBearer, authenticateToken} from "../auth/middleware.js"
+import { authFromCookie, authFromBearer, authenticateToken, bearerApiToken } from "../auth/middleware.js"
 const router = express.Router();
 export const authRouter = express.Router();
 /**
@@ -113,6 +113,8 @@ authRouter.post("/login", authLogin)
  * /api/quote/{symbol}:
  *   get:
  *     summary: Get quote for stock symbol
+ *     security:
+ *       - bearerAuth: []
  *     tags: [API]
  *     parameters:
  *       - name: symbol
@@ -132,5 +134,5 @@ authRouter.post("/login", authLogin)
  *               change: -2.10
  *               changePercent: -1.19%
  */
-router.get("/quote/:symbol",quote)
+router.get("/quote/:symbol", authenticateToken, bearerApiToken, quote)
 export default router

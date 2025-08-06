@@ -81,4 +81,14 @@ export const authFromBearer = (req, res, next) => {
     return res.status(403).json({ error: "Invalid token" });
   }
 };
-const ch
+export const bearerApiToken = (req, res, next) =>{
+  const token = req.token
+  const user = req.user
+  const storedToken = TokenModel.findOne({ refreshToken: token})
+  if (storedToken.user.user !== user) return res.status(403).json({ message: "ข้อมูลไม่ตรง"})
+  const now = new Date();
+  if (storedToken.expiresAt < now) {
+    return res.status(403).json({ error: "Refresh token expired" });
+  }
+  next()
+}

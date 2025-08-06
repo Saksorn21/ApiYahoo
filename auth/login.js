@@ -30,11 +30,11 @@ export const authLogin = async (req, res) => {
 
   const expiryDate = new Date();
   expiryDate.setDate(expiryDate.getDate() + 7);
-  await TokenModel.create({
-    user: user.username,
-    refreshToken,
-    expiresAt: expiryDate
-  });
+  //await TokenModel.create({
+   // user: user.username,
+   // refreshToken,
+  //  expiresAt: expiryDate
+  //});
 
   res.json({ accessToken, refreshToken });
 }

@@ -32,6 +32,15 @@ const swaggerOptions = {
       { name: "Auth", description: "Authentication endpoints"}
     ],
     servers: [{ url: "https://44c550b7-54f4-4174-bd1d-c51ff1e4f8c8-00-1wilq50r88xfl.janeway.replit.dev" }],
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+      },
+    },
+  },
   },
   apis: ["./routers/*.js"], // ตรงนี้ชี้ไฟล์ route ที่มีคอมเมนต์
 };
