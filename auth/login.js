@@ -1,14 +1,14 @@
-import UserModel from "../models/User.js";
+import { User } from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import TokenModel from "../models/Token.js";
 
 export const authLogin = async (req, res) => {
   const { username, password } = req.body;
-  const user = await UserModel.findOne({ username });
+  const user = await User.findOne({ username });
   if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
-  const valid = await bcrypt.compare(password, user.passwordHash);
+  const valid = await bcrypt.compare(password, user.password);
   if (!valid) return res.status(401).json({ error: "Invalid credentials" });
 
   // สร้าง token ตามเดิม (ใช้ user.username, user.role)

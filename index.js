@@ -1,6 +1,7 @@
 import express from "express"
 import dotenv from "dotenv"
 import cors from "cors"
+import mongoose from "mongoose"
 import router, { authRouter } from "./routers/index.js"
 import { generalLimiter, loginLimiter } from "./auth/rateLimit.js";
 import adminRouter from './routers/admin.js'
@@ -37,9 +38,11 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
 
 dotenv.config()
+
 const env = process.env
 const app = express()
 const PORT = env.PORT || 5000
+mongoose.connect(process.env.MONGO_URI);
 app.use(express.json())
 app.use(cors())
 app.set("trust proxy", 1)
