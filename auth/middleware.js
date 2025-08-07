@@ -94,10 +94,49 @@ export const bearerApiToken = (req, res, next) =>{
   const token = req.token
   const user = req.user
   const storedToken = TokenModel.findOne({ refreshToken: token})
-  if (storedToken.user !== user) return res.status(403).json({ message: "ข้อมูลไม่ตรง"})
+  if (storedToken.user !== user) return res.status(403).json({ error: "ข้อมูลไม่ตรง"})
   const now = new Date();
   if (storedToken.expiresAt < now) {
     return res.status(403).json({ error: "Refresh token expired" });
   }
+  const log = new LogModel({
+    user: decoded.user,
+    action: req.method + " " + req.originalUrl,
+    ip: req.ip,
+    tokenId: decoded.jti || null
+  });
+  await log.save();
   next()
 }
+
+
+export const logMiddleware = async (req, res, next) => {
+  const start = process.hrtime(); // precise timer
+  const user = req.user?.username || "anonymous";
+  const ip = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+  // ทำหลัง response เสร็จแล้ว
+  res.on('finish', async () => {
+    const [seconds, nanoseconds] = process.hrtime(start);
+    const responseTime = (seconds * 1e3 + nanoseconds / 1e6).toFixed(2); // ms
+
+    const logData = {
+      user,
+      action: `${req.method} ${req.originalUrl}`,
+      ip,
+      tokenId: req.user?.jti || undefined,
+      endpoint: req.originalUrl,
+      method: req.method,
+      statusCode: res.statusCode,
+      responseTime: parseFloat(responseTime),
+    };
+
+    try {
+      await LogModel.create(logData);
+    } catch (err) {
+      console.error("Failed to save log:", err);
+    }
+  });
+
+  next();
+};
