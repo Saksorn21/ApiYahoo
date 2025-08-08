@@ -99,13 +99,7 @@ export const bearerApiToken = (req, res, next) =>{
   if (storedToken.expiresAt < now) {
     return res.status(403).json({ error: "Refresh token expired" });
   }
-  const log = new LogModel({
-    user: decoded.user,
-    action: req.method + " " + req.originalUrl,
-    ip: req.ip,
-    tokenId: decoded.jti || null
-  });
-  await log.save();
+  
   next()
 }
 

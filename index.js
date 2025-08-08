@@ -9,7 +9,7 @@ import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
-
+import { logMiddleware } from './auth/middleware.js'
 
 const swaggerLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 นาที
@@ -62,7 +62,7 @@ app.use("/api-docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerSpe
 app.use(generalLimiter)
 app.use("/admin", adminRouter)
 app.use("/auth", authRouter)
-app.use("/api", router)
+app.use("/api", logMiddleware, router)
 app.use((err, req, res, next) => {
   console.error("🔥 Server error:", err.stack);
   res.status(500).json({ message: "Internal Server Error" });
