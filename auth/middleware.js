@@ -4,6 +4,7 @@ import { User} from
 "../models/User.js"
 import TokenModel from 
 "../models/Token.js"
+import logger from "../utilities/log.js"
 const findUserByToken = async (token) => {
   const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET)
   const user = await User.findById(decoded.id)
@@ -103,7 +104,42 @@ export const bearerApiToken = (req, res, next) =>{
   next()
 }
 
+export const logConsole = (req, res, next) => {
+  const start = process.hrtime();
 
+  res.on('finish', () => {
+    try {
+      const [sec, nano] = process.hrtime(start);
+      const responseTime = (sec * 1e3 + nano / 1e6).toFixed(2);
+
+      const logLevel = getLogLevel(res.statusCode);
+      logger.log(
+        req.method,
+        logLevel,
+        res.statusCode,
+        req.originalUrl,
+        parseFloat(responseTime),
+        res.locals.errorMessage // เผื่อ middleware อื่นตั้งค่าไว้
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📝 Body:', req.body);
+          console.log('🔍 Query:', req.query);
+        }
+      );
+    } catch (err) {
+      console.error('Logger error:', err);
+    }
+  });
+
+  next();
+};
+
+// แยก function เอาไว้ตัดสินใจสีและ log type
+function getLogLevel(status) {
+  if (status >= 500) return 'error';
+  if (status >= 400) return 'error';
+  if (status >= 300) return 'warn';
+  return 'info';
+}
 export const logMiddleware = async (req, res, next) => {
   const start = process.hrtime(); // precise timer
   const user = req.user?.username || "anonymous";
