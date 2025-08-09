@@ -1,5 +1,5 @@
 // socket.js
-export const initSocket = (server) => {
+export const initSocket = async (server) => {
   const { Server } = await import('socket.io');
   const io = new Server(server);
 

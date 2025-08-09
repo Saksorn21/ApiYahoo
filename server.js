@@ -59,19 +59,19 @@ const app = express()
 const server = http.createServer(app);
 
 const io = await initSocket(server);
-logger.setSocket(io)
+logger.setSocketIO(io)
 const PORT = env.PORT || 5000
 mongoose.connect(process.env.MONGO_URI);
 app.use(express.json())
 app.use(cors())
 app.use(cookieParser());
-app.use(logConsole(io))
+
 app.set("trust proxy", 1)
 app.use("/api-docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(generalLimiter)
 app.use("/admin", adminRouter)
 app.use("/auth", authRouter)
-app.use("/api", logConsole, logMiddleware, router)
+app.use("/api",logConsole, logMiddleware, router)
 app.use((err, req, res, next) => {
   console.error("🔥 Server error:", err.stack);
   res.status(500).json({ message: "Internal Server Error" });

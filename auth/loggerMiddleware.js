@@ -11,11 +11,11 @@ export const logConsole = (req, res, next) => {
       const responseTime = (sec * 1e3 + nano / 1e6).toFixed(2);
 
       const logLevel = getLogLevel(res.statusCode);
-
+const ip = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress
       // เรียก debug แยกตอน dev mode เพื่อพิมพ์ body กับ query
       logger.debug('📝 Body:', req.body);
       logger.debug('🔍 Query:', req.query);
-
+console.log(ip)
       // ส่ง log หลัก
       logger.log(
         req.method,
@@ -23,6 +23,7 @@ export const logConsole = (req, res, next) => {
         res.statusCode,
         req.originalUrl,
         parseFloat(responseTime),
+        ip,
         res.locals.errorMessage // ถ้ามี error message เก็บไว้
       );
     } catch (err) {

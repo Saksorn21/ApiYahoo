@@ -8,6 +8,7 @@ class Logger {
     this.logger = undefined
     this.endpoint = ''
     this.method = ''
+    this.ip = ''
     this.statusCode = null
     this.timeMs = null
     this.message = undefined
@@ -74,6 +75,7 @@ class Logger {
     this.blank()
     this.formatEndpoint()
     this.blank()
+    this.finishMessage += chalk.blackBright.italic(this.ip)
     this.finishMessage += chalk.blackBright.bold(arrow)
     this.blank()
     this.formatStatusCode()
@@ -86,12 +88,13 @@ class Logger {
       }
     this.isFinish = true
   }
-  log(method, logLevel, statusCode, endpoint, timeMs, message = undefined){
+  log(method, logLevel, statusCode, endpoint, timeMs, ip, message = undefined){
     this.isFinish = false
     this.statusCode = statusCode
     this.logger = logLevel
     this.endpoint = endpoint
     this.method = method
+    this.ip = ip
     this.timeMs = timeMs
     if(message !== undefined) this.message = message
     this.processFormat()
@@ -107,9 +110,10 @@ class Logger {
           logLevel,
           statusCode,
           endpoint,
+          ip,
           timeMs,
           message,
-          formatted: result,
+          formatted: chalk.reset(result),
         });
       }
 

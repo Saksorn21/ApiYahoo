@@ -4,7 +4,7 @@ import { User} from
 "../models/User.js"
 import TokenModel from 
 "../models/Token.js"
-import logger from "../utils/log.js"
+import logger from "../utils/logger.js"
 const findUserByToken = async (token) => {
   const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET)
   const user = await User.findById(decoded.id)
