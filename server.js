@@ -59,7 +59,7 @@ const app = express()
 const server = http.createServer(app);
 
 const io = await initSocket(server);
-logger.setSocketIO(io)
+ logger.setSocketIO(io)
 const PORT = env.PORT || 5000
 mongoose.connect(process.env.MONGO_URI);
 app.use(express.json())
@@ -80,4 +80,4 @@ app.use((req, res) => {
   res.status(404).json({ message: "API not found" });
 });
 
-app.listen(PORT, ()=> console.log("📈 API ready at Port" + PORT));
+server.listen(PORT, ()=> console.log("📈 API ready at Port" + PORT));

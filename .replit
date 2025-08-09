@@ -9,10 +9,21 @@ requiredFiles = [".replit", "replit.nix", "package.json", "package-lock.json"]
 channel = "stable-24_11"
 
 [deployment]
-run = ["nodemon", "server.js"]
+run = ["npm", "run dev"]
 deploymentTarget = "autoscale"
 ignorePorts = false
 
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[workflows]
+
+[[workflows.workflow]]
+name = "Run"
+mode = "parallel"
+author = 37152634
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"

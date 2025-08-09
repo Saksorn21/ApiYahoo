@@ -101,7 +101,7 @@ const url = "https://query1.finance.yahoo.com/v8/finance/chart/NVDA?range=1d&int
 axios.get(url).then(res => {
   const result = res.data.chart.result[0];
   const lastClose = result.meta.regularMarketPrice;
-  console.log(result)
+  console.log()
   console.log("ราคาล่าสุด BTC:", lastClose);
 });
 //getPrice("NVDA");
