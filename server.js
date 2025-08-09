@@ -1,6 +1,7 @@
 import express from "express"
 import dotenv from "dotenv"
 import cors from "cors"
+import http from 'http';
 import mongoose from "mongoose"
 import router, { authRouter } from "./routers/index.js"
 import { generalLimiter, loginLimiter } from "./auth/rateLimit.js";
@@ -10,6 +11,9 @@ import swaggerJSDoc from "swagger-jsdoc";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { logMiddleware } from './auth/middleware.js'
+import { logConsole } from './auth/loggerMiddleware.js'
+import logger from './utils/logger.js'
+import { initSocket } from './socket.js';
 
 const swaggerLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 นาที
@@ -52,17 +56,22 @@ dotenv.config()
 
 const env = process.env
 const app = express()
+const server = http.createServer(app);
+
+const io = await initSocket(server);
+logger.setSocket(io)
 const PORT = env.PORT || 5000
 mongoose.connect(process.env.MONGO_URI);
 app.use(express.json())
 app.use(cors())
 app.use(cookieParser());
+app.use(logConsole(io))
 app.set("trust proxy", 1)
 app.use("/api-docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(generalLimiter)
 app.use("/admin", adminRouter)
 app.use("/auth", authRouter)
-app.use("/api", logMiddleware, router)
+app.use("/api", logConsole, logMiddleware, router)
 app.use((err, req, res, next) => {
   console.error("🔥 Server error:", err.stack);
   res.status(500).json({ message: "Internal Server Error" });
@@ -70,4 +79,5 @@ app.use((err, req, res, next) => {
 app.use((req, res) => {
   res.status(404).json({ message: "API not found" });
 });
+
 app.listen(PORT, ()=> console.log("📈 API ready at Port" + PORT));

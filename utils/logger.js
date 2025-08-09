@@ -2,7 +2,8 @@ import chalk from "chalk"
 import isUnicodeSupported from './unicode.js'
 const arrow  = isUnicodeSupported ? '➜' : '->'
 class Logger {
-  constructor(){
+  constructor(io = null){
+    this.io = io
     this.instance = console.log
     this.logger = undefined
     this.endpoint = ''
@@ -12,6 +13,9 @@ class Logger {
     this.message = undefined
     this.isFinish = false
     this.finishMessage = ''
+  }
+  setSocketIO(io) {
+  this.io = io
   }
   formatStatusCode(){
     let code = this.statusCode
@@ -82,23 +86,60 @@ class Logger {
       }
     this.isFinish = true
   }
-  log(method, log, statusCode, endpoint, timeMs, message = undefined){
+  log(method, logLevel, statusCode, endpoint, timeMs, message = undefined){
     this.isFinish = false
     this.statusCode = statusCode
-    this.logger = log
+    this.logger = logLevel
     this.endpoint = endpoint
     this.method = method
     this.timeMs = timeMs
     if(message !== undefined) this.message = message
     this.processFormat()
-   if(this.isFinish){ 
-     this.isFinish = false
-     const result = this.finishMessage
-     this.finishMessage = ''
-     return console[log](result)
-   }
-    this.isFinish = false
-    this.finishMessage = ''
+    if (this.isFinish) {
+      this.isFinish = false;
+      const result = this.finishMessage;
+      console[result ? 'info' : 'log'](result); // console.log หรือ console.info ตามที่คุณมี
+
+      // ส่ง log ไป socket.io ด้วย ถ้ามี
+      if (this.io) {
+        this.io.emit('server-log', {
+          method,
+          logLevel,
+          statusCode,
+          endpoint,
+          timeMs,
+          message,
+          formatted: result,
+        });
+      }
+
+      this.finishMessage = '';
+      return;
+    }
+
+    this.isFinish = false;
+    this.finishMessage = '';
+  }
+  debug(...messages) {
+    if (process.env.NODE_ENV === 'development') {
+      // เวลาประเทศไทย (Asia/Bangkok)
+      const timestamp = chalk.gray(
+        `[${new Date().toLocaleString('th-TH', {
+          timeZone: 'Asia/Bangkok',
+          hour12: false
+        })}]`
+      );
+
+      const label = chalk.bgHex('#ff8700').black.bold(' DEBUG ');
+
+      return console.log(
+        label,
+        timestamp,
+        ...messages.map(m =>
+          chalk.whiteBright(typeof m === 'string' ? m : JSON.stringify(m, null, 2))
+        )
+      );
+    }
   }
 }
 export default new Logger
