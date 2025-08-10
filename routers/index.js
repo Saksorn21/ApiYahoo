@@ -112,11 +112,11 @@ authRouter.post("/login", authLogin)
   authRouter.post("/refresh",authFromCookie, refreshToken)
 /**
  * @swagger
- * /auth/payment
+ * /auth/payment:
  *   post:
  *     summary: Payment member
  *     tags: [Auth]
- *     requestBoday:
+ *     requestBody:
  *       required: true
  *       content:
  *         application/json:
@@ -135,7 +135,6 @@ authRouter.post("/login", authLogin)
  *         content:
  *           application/json:
  *             example:
- *               message: AAPL
  *               message: 'Payment successful'
  *               chargeId: 'chargeId'
  *               status: 'chargeSstatus'
@@ -174,5 +173,5 @@ authRouter.post("/payment", authFromCookie, payment)
  *               change: -2.10
  *               changePercent: -1.19%
  */
-router.get("/quote/:symbol", authFromBearer, bearerApiToken, quote)
+router.get("/quote/:symbol", quote)
 export default router

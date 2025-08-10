@@ -8,15 +8,14 @@ import logger from "../utils/logger.js"
 const findUserByToken = async (token) => {
   const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET)
   const user = await User.findById(decoded.id)
-  return user.username
+  return user
 }
 export const adminCheck = async (req, res, next) => {
   // เช็ก user ใน token ว่าเป็น "admin"
   const token = req.token || req.cookies.accessToken
   if (!token) return res.status(401).json({ message: "No Token" });
   try {
-    const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET)
-    const user = await User.findById(decoded.id)
+    const user = findUserByToken(token)
     if (user.role !== "admin") {
       return res.status(403).json({ error: "Admin only access" });
     }
@@ -27,10 +26,7 @@ export const adminCheck = async (req, res, next) => {
   }
   
 };
-function isJwt(token) {
-  const jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/;
-  return jwtRegex.test(token);
-}
+
 export const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -72,37 +68,52 @@ export const authFromCookie = async (req, res, next) => {
     return res.status(403).json({ error: "Invalid token" });
   }
 };
-
+function isJwt(token) {
+  const jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/;
+  return jwtRegex.test(token);
+}
+function isBase64Url(apiToken) {
+  const base64UrlRegex = /^[A-Za-z0-9-_]+$/
+  return base64UrlRegex.test(apiToken)
+   
+}
 // ตรวจ Bearer สำหรับ API
-export const authFromBearer = (req, res, next) => {
+export const authFromBearer = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
   if (!authHeader?.startsWith("Bearer ")) {
     return res.status(401).json({ error: "No token " });
   }
-  const token = authHeader.split(" ")[1];
-  if (!isJwt(token)) return res.status(401).json({ error: "Invalid Bearer Token format: Bearer <token>"})
+  const apiToken = authHeader.split(" ")[1];
+  // กันคนส่ง headers ผิดรูปแบบ 
+  //ex Bearer Bearer <token>
+  //ex Bearer <token> Bearer
+  if (!isBase64Url(apiToken)) return res.status(401).json({ error: "Invalid Bearer Token format: Bearer <token>"})
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const dataUser = User.findById(decoded.id)
-    req.user = dataUser.username
-    req.token = token
+  
+    const tokenDoc = await TokenModel.findOne({ apiToken }).lean()
+  if (!tokenDoc) return res.status(403).json({ error: "Invalid token" });
+  if (tokenDoc.expiresAt < new Date())
+    return res.status(403).json({ error: "Token expired" });
+    let decoded;
+    try {
+      decoded = jwt.verify(tokenDoc.refreshToken, process.env.JWT_SECRET);
+    } catch (err){
+      logger.debug("authFromBearer JWT Error:", err)
+      return res.status(403).json({ error: "Invalid token signature" });
+}
+    
+   const dataUser = await User.findById(decoded.id).lean();
+    if (!dataUser) return res.status(403).json({ error: "Invalid token user" });
+    if (dataUser.username !== tokenDoc.user) return res.status(403).json({ error: "Token user mismatch" });
+
+    req.user = dataUser
     next();
+
   } catch (err) {
-    return res.status(403).json({ error: "Invalid token" });
+    logger.debug("authFromBearer Error:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
-export const bearerApiToken = (req, res, next) =>{
-  const token = req.token
-  const user = req.user
-  const storedToken = TokenModel.findOne({ refreshToken: token})
-  if (storedToken.user !== user) return res.status(403).json({ error: "ข้อมูลไม่ตรง"})
-  const now = new Date();
-  if (storedToken.expiresAt < now) {
-    return res.status(403).json({ error: "Refresh token expired" });
-  }
-  
-  next()
-}
 
 export const logMiddleware = async (req, res, next) => {
   const start = process.hrtime(); // precise timer

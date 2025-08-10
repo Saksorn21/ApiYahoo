@@ -5,13 +5,13 @@ import TokenModel from "../models/Token.js";
 
 export const authLogin = async (req, res) => {
   const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: "Username and password are required"})
   const user = await User.findOne({ username });
-  if (!user) return res.status(401).json({ error: "Invalid credentials" });
+  if (!user) return res.status(401).json({ error: "Username not found" });
 
   const valid = await bcrypt.compare(password, user.password);
-  if (!valid) return res.status(401).json({ error: "Invalid credentials" });
+  if (!valid) return res.status(401).json({ error: "Password is incorrect" });
 
-  // สร้าง token ตามเดิม (ใช้ user.username, user.role)
   const accessToken = jwt.sign(
     { id: user._id },
     process.env.JWT_LOGIN_SECRET,
@@ -36,5 +36,5 @@ export const authLogin = async (req, res) => {
   //  expiresAt: expiryDate
   //});
 
-  res.json({ accessToken, refreshToken });
+  res.status(200).json({ message: "Login successful" });
 }
