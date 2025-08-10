@@ -138,14 +138,17 @@ class Logger {
 
       const label = chalk.bgHex('#ff8700').black.bold(' DEBUG ');
 
-      return console.log(
-        label,
-        timestamp,
-        ...messages.map(m =>
-          chalk.whiteBright(typeof m === 'string' ? m : JSON.stringify(m, Object.getOwnPropertyNames(m), 2))
-        )
-      );
-    }
-  }
-}
+  return console.log(
+    label,
+    timestamp,
+    ...messages.map(m => {
+      if (typeof m === 'string') return chalk.whiteBright(m);
+      if (m && typeof m === 'object') {
+        return chalk.whiteBright(JSON.stringify(m, Object.getOwnPropertyNames(m), 2));
+      }
+      // fallback สำหรับ null, undefined, number, boolean
+      return chalk.whiteBright(String(m));
+    })
+  );
+}}}
 export default new Logger

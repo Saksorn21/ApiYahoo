@@ -30,13 +30,15 @@ export async function rateLimitMembership(req, res, next) {
     const limit = LIMITS[membership.membershipLevel] ?? 100;
     const key = `ratelimit:${userId}`;
     let count = await redis.incr(key);
-
-    if (count === 1) {
-      // ตั้ง expire countdown (เช่น เที่ยงคืนวันถัดไป)
-      const now = new Date();
-      const reset = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-      const ttl = Math.floor((reset.getTime() - now.getTime()) / 1000);
-      await redis.expire(key, ttl);
+   let ttl
+      if (count === 1) {
+        const now = new Date();
+        const reset = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        ttl = Math.floor((reset.getTime() - now.getTime()) / 1000);
+        await redis.expire(key, ttl);
+      } else {
+        // ถ้า key มีอยู่แล้ว ให้ดึง ttl ปัจจุบันจาก redis
+        ttl = await redis.ttl(key);
     }
 
     if (count > limit) {
@@ -46,7 +48,7 @@ export async function rateLimitMembership(req, res, next) {
       logger.debug(`Rate limit exceeded for user ${req.user.username}`)
       return res.status(429).json({ error: "API rate limit exceeded" });
     }
-logger.debug(`Rate limit for user ${req.user.username}: ${Math.max(limit - count, 0)}/${limit}`)
+logger.debug(`Rate limit for user ${req.user.username}: ${count}/${limit}`)
     // ส่ง header บอกจำนวนเหลือ
     res.setHeader("X-RateLimit-Limit", limit);
     res.setHeader("X-RateLimit-Remaining", Math.max(limit - count, 0));
