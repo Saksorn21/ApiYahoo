@@ -5,7 +5,7 @@ import { authLogout } from "../auth/logout.js"
 import { getApiToken  } from "../auth/apiToken.js"
 import { authRegister  } from "../auth/register.js"
 import { refreshToken } from "../auth/refresh.js"
-import { authFromCookie, authFromBearer, bearerApiToken } from "../auth/middleware.js"
+import { authFromCookie } from "../auth/middleware.js"
 import { payment } from "../auth/payment.js"
 
 const router = express.Router();
@@ -59,6 +59,8 @@ authRouter.post("/login", authLogin)
  *             properties:
  *               username:
  *                 type: string
+ *               email:
+ *                 type: string
  *               password:
  *                 type: string
  *     responses:
@@ -85,6 +87,18 @@ authRouter.post("/login", authLogin)
  *   post:
  *     summary: get api token
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               expiresIn:
+ *                 type: string
+ *                 enum: [1d, 7d, 30d, 1y]
+ *                 default: 7d
+ *                 description: Token expiration time
  *     responses:
  *       200:
  *         description: get API Token

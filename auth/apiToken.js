@@ -12,13 +12,15 @@ export const getApiToken = async (req, res) => {
   // สร้าง bearer token สำหรับ API Yahoo Finance
   const EXPIRE_OPTIONS = { "1d": 1, "7d": 7, "30d": 30, "1y": 365 };
   const expiresIn = req.body.expiresIn;
+    if(!expiresIn) return res.status(400).json({ error: "Missing expiresIn"})
   // ส่งมาจาก middleware ตรวจสอบ cookie access token
   const username = req.user.username
+    logger.debug("getApiToken user:", username)
 const dataToken = await TokenModel.findOne({ user: username}).lean()
   // ถ้ามี ข้อมูล token และยังไม่หมดแายุ ส่งกลับไป
     if (dataToken && dataToken.expiresAt > new Date()) return res.json({ apiToken: dataToken.apiToken });
   // ถ้ามี แตืหมดอายุ ให้ลบออก
-  if(dataToken.expiresAt < new Date()){
+  if(dataToken && dataToken.expiresAt < new Date()){
     await TokenModel.deleteOne({ user: username})
    return res.status(403).json({ error: "Token expired"})
   }
@@ -31,11 +33,16 @@ const dataToken = await TokenModel.findOne({ user: username}).lean()
 
   const apiToken = generateApiToken();
   // สร้าง jwt token แยกจาก access token เพื่อใช้สำหรับ API
-  const refreshToken = jwt.sign(
+    let refreshToken
+    try{
+   refreshToken = jwt.sign(
     { id: user._id },
     process.env.JWT_SECRET,
     { expiresIn: process.env.REFRESH_EXPIRES }
   );
+      } catch (err){
+        logger.debug("api-token JWT error: ", err)
+      }
 
   await TokenModel.create({
     user: user.username,
@@ -47,6 +54,7 @@ const dataToken = await TokenModel.findOne({ user: username}).lean()
 res.json({ apiToken })
     } catch (error) {
     logger.debug("/api-token error: ", error)
+    console.error(error)
     res.status(500).json({ error: "Internal server error" });
     }
 

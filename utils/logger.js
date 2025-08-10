@@ -142,7 +142,7 @@ class Logger {
         label,
         timestamp,
         ...messages.map(m =>
-          chalk.whiteBright(typeof m === 'string' ? m : JSON.stringify(m, null, 2))
+          chalk.whiteBright(typeof m === 'string' ? m : JSON.stringify(m, Object.getOwnPropertyNames(m), 2))
         )
       );
     }

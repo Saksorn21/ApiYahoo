@@ -5,7 +5,7 @@ import http from 'http';
 import mongoose from "mongoose"
 import router, { authRouter } from "./routers/index.js"
 import { swaggerJson, swaggerSpec, swaggerLimiter } from "./swagger.js"
-import { generalLimiter, loginLimiter } from "./auth/rateLimit.js";
+import { generalLimiter, rateLimitMembership } from "./auth/rateLimit.js";
 import adminRouter from './routers/admin.js'
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
@@ -38,7 +38,7 @@ app.use("/api-docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerSpe
 app.use(generalLimiter)
 app.use("/admin", adminRouter)
 app.use("/auth", authRouter)
-app.use("/api",authFromBearer, logConsole, logMiddleware, router)
+app.use("/api",authFromBearer, rateLimitMembership, logConsole, logMiddleware, router)
 app.post("/omise-webhook",webhook)
 app.get("/v1/swaggerJson", swaggerJson)
 app.use((err, req, res, next) => {
