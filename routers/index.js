@@ -6,6 +6,8 @@ import { getApiToken  } from "../auth/apiToken.js"
 import { authRegister  } from "../auth/register.js"
 import { refreshToken } from "../auth/refresh.js"
 import { authFromCookie, authFromBearer, bearerApiToken } from "../auth/middleware.js"
+import { payment } from "../auth/payment.js"
+
 const router = express.Router();
 export const authRouter = express.Router();
 /**
@@ -101,13 +103,51 @@ authRouter.post("/login", authLogin)
  *           schema:
  *             type: object
  *             properties:
- *               refreshToken:
+ *               apiToken:
  *                 type: string
  *     responses:
  *       200:
  *         description: Created a new access token
  */
   authRouter.post("/refresh",authFromCookie, refreshToken)
+/**
+ * @swagger
+ * /auth/payment
+ *   post:
+ *     summary: Payment member
+ *     tags: [Auth]
+ *     requestBoday:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *               token:
+ *                 type: string
+ *               orderId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Payment successful
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: AAPL
+ *               message: 'Payment successful'
+ *               chargeId: 'chargeId'
+ *               status: 'chargeSstatus'
+ *       400:
+ *         description: Payment failed
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: 'Payment failed'
+ *               message: 'chargeFailure_message'
+ */
+authRouter.post("/payment", authFromCookie, payment)
 /**
  * @swagger
  * /api/quote/{symbol}:

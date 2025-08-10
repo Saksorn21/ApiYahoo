@@ -14,6 +14,7 @@ import { logMiddleware } from './auth/middleware.js'
 import { logConsole } from './auth/loggerMiddleware.js'
 import logger from './utils/logger.js'
 import { initSocket } from './socket.js';
+import { webhook } from "./routers/webhook.js"
 
 const swaggerLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 นาที
@@ -72,6 +73,7 @@ app.use(generalLimiter)
 app.use("/admin", adminRouter)
 app.use("/auth", authRouter)
 app.use("/api",logConsole, logMiddleware, router)
+app.post("/omise-webhook",webhook)
 app.use((err, req, res, next) => {
   console.error("🔥 Server error:", err.stack);
   res.status(500).json({ message: "Internal Server Error" });

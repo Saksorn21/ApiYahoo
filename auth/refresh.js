@@ -5,12 +5,12 @@ import { User } from "../models/User.js"
 
 // ตรวจสอบ refresh token และสร้าง access token ใหม่ สำหละบ Bearer API
 export const refreshToken = async (req, res) => {
-  const { refreshToken } = req.body;
-  if (!refreshToken) return res.status(400).json({ error: "No refresh token" });
+  const { apiToken } = req.body;
+  if (!apiToken) return res.status(400).json({ error: "No API token" });
 
   try {
     // 1. หา refresh token ใน DB
-    const storedToken = await TokenModel.findOne({ refreshToken });
+    const storedToken = await TokenModel.findOne({ refreshToken: apiToken });
     if (!storedToken) return res.status(403).json({ error: "Invalid refresh token" });
     const storedUser = await User.findOne({ username: storedToken.user })
     // 2. เช็กหมดอายุ
