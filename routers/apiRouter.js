@@ -2,6 +2,7 @@ import express from "express";
 import chart from "../api/chart.js";
 import quote from "../api/quote.js";
 import news from "../api/news.js";
+import { search, searchAutoComplete } from "../api/search.js"
 const apiRouter = express.Router();
 /**
  * @swagger
@@ -240,4 +241,7 @@ apiRouter.get("/quote/:symbol", quote);
  *                   example: Server Data Error
  */
 apiRouter.get("/news", news);
+
+apiRouter.get("/search", search)
+apiRouter.get("/search/autocomplete", searchAutoComplete)
 export default apiRouter;
