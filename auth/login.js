@@ -2,39 +2,53 @@ import { User } from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import TokenModel from "../models/Token.js";
-
+import redis from "../redisClient.js";
 export const authLogin = async (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: "Username and password are required"})
-  const user = await User.findOne({ username });
-  if (!user) return res.status(401).json({ error: "Username not found" });
+  const { identifier, password } = req.body; // เปลี่ยนเป็น identifier ครอบคลุมทั้ง email หรือ username
+
+  if (!identifier || !password) 
+    return res.status(400).json({ error: "Username/email and password are required" });
+
+  // หา user โดยเช็ค identifier ว่า match email หรือ username
+  const user = await User.findOne({
+    $or: [{ email: identifier }, { username: identifier }],
+  });
+
+  if (!user) 
+    return res.status(401).json({
+      success: false,
+      statusCode: 401,
+      code: 'INVALID_CREDENTIALS',
+      message: "Invalid username or email"
+    });
 
   const valid = await bcrypt.compare(password, user.password);
-  if (!valid) return res.status(401).json({ error: "Password is incorrect" });
+  if (!valid) 
+    return res.status(401).json({ 
+      success: false,
+      statusCode: 401,
+      code: 'INVALID_PASSWORD',
+      message: "Password is incorrect" 
+    });
 
   const accessToken = jwt.sign(
     { id: user._id },
     process.env.JWT_LOGIN_SECRET,
     { expiresIn: process.env.JWT_EXPIRES }
   );
+
+  await redis.set(`session:${user._id}`, accessToken, "EX", 24 * 60 * 60);
+
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // ใช้ https เท่านั้น
+    secure: process.env.NODE_ENV === "production", // https เท่านั้น
     maxAge: 60 * 60 * 1000  // 1 ชม.
-  })
-  const refreshToken = jwt.sign(
-    { id: user._id },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.REFRESH_EXPIRES }
-  );
+  });
 
-  const expiryDate = new Date();
-  expiryDate.setDate(expiryDate.getDate() + 7);
-  //await TokenModel.create({
-   // user: user.username,
-   // refreshToken,
-  //  expiresAt: expiryDate
-  //});
-
-  res.status(200).json({ message: "Login successful" });
-}
+  res.status(200).json({
+    success: true,
+    statusCode: 200,
+    code: 'LOGIN_SUCCESS',
+    message: "Login successful"
+  });
+};

@@ -5,24 +5,34 @@ import { User} from
 import TokenModel from 
 "../models/Token.js"
 import logger from "../utils/logger.js"
+import redis from "../redisClient.js"
 const findUserByToken = async (token) => {
   const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET)
-  const user = await User.findById(decoded.id)
+  const user = await User.findById(decoded.id).lean().select("-password")
   return user
 }
 export const adminCheck = async (req, res, next) => {
   // เช็ก user ใน token ว่าเป็น "admin"
   const token = req.token || req.cookies.accessToken
-  if (!token) return res.status(401).json({ message: "No Token" });
   try {
-    const user = findUserByToken(token)
+    const user = await findUserByToken(token)
     if (user.role !== "admin") {
-      return res.status(403).json({ error: "Admin only access" });
+      console.debug("adminCheck : ", user)
+      return res.status(403).json({ 
+        success: false,
+        statusCode: 403,
+        code: 'ADMIN_ONLY',
+        message: "Admin only access" });
     }
     req.user = user
     next();
   } catch ( err) {
-    res.status(401).json({ message: "Invalid token" });
+    logger.debug("adminCheck Error: ", err)
+    res.status(401).json({ 
+      success: false,
+      statusCode: 401,
+      code: 'INVALID_TOKEN',
+      message: "Invalid token" });
   }
   
 };
@@ -58,20 +68,72 @@ export const authenticateToken = async (req, res, next) => {
 // ตรวจ login token จาก cookie
 export const authFromCookie = async (req, res, next) => {
   const token = req.cookies.accessToken;
-  if (!token) return res.status(401).json({ error: "No token" });
+  if (!token) {
+    logger.debug("adminCheck token Error: ", token)
+    return res.status(401).json({ 
+    success: false,
+    statusCode: 401,
+    code: 'NO_TOKEN',
+    message: "No token provided" });
+    }
 
   try {
     const user = await findUserByToken(token)
-    req.user = user;
+    res.user = user;
     next();
   } catch (err) {
-    return res.status(403).json({ error: "Invalid token" });
+    logger.debug("Check Cookies Error: ", err)
+    return res.status(403).json({ 
+      success: false,
+      statusCode: 403,
+      code: 'INVALID_TOKEN',
+      message: "Invalid or expired token" });
   }
 };
-function isJwt(token) {
-  const jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/;
-  return jwtRegex.test(token);
-}
+
+export const checkLogin = async (req, res, next) => {
+  const token = req.cookies.accessToken;
+  // ดึง session จาก Redis
+  const userId = res.user._id;
+  const savedToken = await redis.get(`session:${userId}`);
+
+  if (savedToken !== token) {
+    return res.status(403).json({ 
+      success: false,
+      statusCode: 403,
+      code: 'SESSION_EXPIRED',
+      message: "Session expired or logged in elsewhere" });
+  }
+
+  next();
+};
+export const preventAccessIfLoggedIn = async (req, res, next) => {
+  const token = req.cookies.accessToken;
+  if (!token) return next(); // ไม่มี token ให้ผ่าน
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET);
+    const userId = decoded.id;
+
+    const savedToken = await redis.get(`session:${userId}`);
+
+    if (savedToken === token) {
+      // Token ยัง valid และ session ยังอยู่ → ห้ามเข้า
+      return res.status(400).json({
+        success: false,
+        statusCode: 400,
+        code: 'ALREADY_LOGGED_IN',
+        message: 'You are already logged in'
+      });
+    }
+
+    // session ไม่มีหรือ token ไม่ตรง → อนุญาตให้เข้า (login หรือ register ใหม่)
+    next();
+  } catch (err) {
+    // token invalid หรือ expired → อนุญาตให้เข้า (login หรือ register ใหม่)
+    next();
+  }
+};
 function isBase64Url(apiToken) {
   const base64UrlRegex = /^[A-Za-z0-9-_]+$/
   return base64UrlRegex.test(apiToken)

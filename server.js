@@ -8,6 +8,7 @@ import { swaggerJson, swaggerSpec, swaggerLimiter } from "./swagger.js"
 import { generalLimiter, rateLimitMembership } from "./auth/rateLimit.js";
 import adminRouter from './routers/admin.js'
 import swaggerUi from "swagger-ui-express";
+import redisClient from "./redisClient.js"
 import swaggerJSDoc from "swagger-jsdoc";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
@@ -29,6 +30,7 @@ const io = await initSocket(server);
  logger.setSocketIO(io)
 const PORT = env.PORT || 5000
 mongoose.connect(process.env.MONGO_URI);
+
 app.use(express.json())
 app.use(cors())
 app.use(cookieParser());

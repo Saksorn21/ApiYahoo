@@ -1,12 +1,16 @@
-import express from "express"
-import quote from "./quote.js"
-import { authLogin } from "../auth/login.js"
-import { authLogout } from "../auth/logout.js"
-import { getApiToken  } from "../auth/apiToken.js"
-import { authRegister  } from "../auth/register.js"
-import { refreshToken } from "../auth/refresh.js"
-import { authFromCookie } from "../auth/middleware.js"
-import { payment } from "../auth/payment.js"
+import express from "express";
+import quote from "./quote.js";
+import { authLogin } from "../auth/login.js";
+import { authLogout } from "../auth/logout.js";
+import { getApiToken } from "../auth/apiToken.js";
+import { authRegister } from "../auth/register.js";
+import { refreshToken } from "../auth/refresh.js";
+import {
+  authFromCookie,
+  checkLogin,
+  preventAccessIfLoggedIn,
+} from "../auth/middleware.js";
+import { payment } from "../auth/payment.js";
 
 const router = express.Router();
 export const authRouter = express.Router();
@@ -23,15 +27,38 @@ export const authRouter = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               username:
+ *               identifier:
  *                 type: string
+ *                 description: "Username or email of the user"
+ *                 example: "usertest"
  *               password:
  *                 type: string
+ *                 description: User password
+ *             required:
+ *               - identifier
+ *               - password
  *     responses:
- *       200:
- *         description: Token returned
+ *       '200':
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 statusCode:
+ *                   type: integer
+ *                 code:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *       '400':
+ *         description: Missing fields
+ *       '401':
+ *         description: Invalid credentials or password
  */
-authRouter.post("/login", authLogin)
+authRouter.post("/login", preventAccessIfLoggedIn, authLogin);
 /**
  * @swagger
  * /auth/logout:
@@ -42,8 +69,8 @@ authRouter.post("/login", authLogin)
  *       200:
  *         description: Logout user
  */
-  
- authRouter.post("/logout", authFromCookie, authLogout)
+
+authRouter.post("/logout", authFromCookie, checkLogin, authLogout);
 /**
  * @swagger
  * /auth/register:
@@ -67,7 +94,7 @@ authRouter.post("/login", authLogin)
  *       200:
  *         description: User created
  */
-  authRouter.post("/register", authRegister)
+authRouter.post("/register", preventAccessIfLoggedIn, authRegister);
 /**
  * @swagger
  * /auth/dashboard:
@@ -78,12 +105,12 @@ authRouter.post("/login", authLogin)
  *       200:
  *         description: desplay user dashboard
  */
-  authRouter.get("/dashboard", authFromCookie, (req, res) =>{
-  res.json({ msg: `Hello ${req.user}` })
-})
+authRouter.get("/dashboard", authFromCookie, checkLogin, (req, res) => {
+  res.json({ msg: `Hello ${req.user.username}` });
+});
 /**
  * @swagger
- * /auth/api-token:
+ * /auth/apikey:
  *   post:
  *     summary: get api token
  *     tags: [Auth]
@@ -103,7 +130,7 @@ authRouter.post("/login", authLogin)
  *       200:
  *         description: get API Token
  */
-  authRouter.post("/api-token", authFromCookie, getApiToken)
+authRouter.post("/apikey", authFromCookie, getApiToken);
 /**
  * @swagger
  * /auth/refresh:
@@ -123,7 +150,7 @@ authRouter.post("/login", authLogin)
  *       200:
  *         description: Created a new access token
  */
-  authRouter.post("/refresh",authFromCookie, refreshToken)
+authRouter.post("/refresh", authFromCookie, refreshToken);
 /**
  * @swagger
  * /auth/payment:
@@ -160,7 +187,7 @@ authRouter.post("/login", authLogin)
  *               error: 'Payment failed'
  *               message: 'chargeFailure_message'
  */
-authRouter.post("/payment", authFromCookie, payment)
+authRouter.post("/payment", authFromCookie, payment);
 /**
  * @swagger
  * /api/quote/{symbol}:
@@ -187,5 +214,5 @@ authRouter.post("/payment", authFromCookie, payment)
  *               change: -2.10
  *               changePercent: -1.19%
  */
-router.get("/quote/:symbol", quote)
-export default router
+router.get("/quote/:symbol", quote);
+export default router;

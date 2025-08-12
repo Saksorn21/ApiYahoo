@@ -7,7 +7,12 @@ import Membership from "../models/Membership.js"
 
 export const authRegister = async (req, res) => {
   const { username, email, password } = req.body;
-  if (!username || !email || !password) return res.status(400).json({ error: "Missing fields" });
+  if (!username || !email || !password) return res.status(400).json({
+    success: false,
+    statusCode: 400,
+    code: 'MISSING_FIELDS',
+    message: "Missing fields" 
+  });
 
   try {
     const exists = await User.findOne({ 
@@ -19,10 +24,20 @@ export const authRegister = async (req, res) => {
 
     if (exists) {
       if (exists.username === username) {
-        return res.status(409).json({ error: "Username taken" });
+        return res.status(409).json({
+          success: false,
+          statusCode: 409,
+          code: 'USERNAME_EXISTS',
+          message: "Username already exists" });
       }
       if (exists.email === email) {
-        return res.status(409).json({ error: "Email taken" });
+        return res.status(409).json({ 
+          success: false,
+          statusCode: 409,
+          code: 'EMAIL_EXISTS',
+          message: "Email already exists",
+          data: null
+        });
       }
     }
 
@@ -36,9 +51,22 @@ export const authRegister = async (req, res) => {
       apiRequestReset: new Date(), // reset ตอนสมัคร
     });
     await membership.save();
-    res.json({ message: "User created", user: user.username });
+    res.status(201).json({ 
+      success: true,
+      statusCode: 201,
+      code: 'SIGNUP_SUCCESS',
+      message: "Account created successfully", 
+      data: {username: user.username }});
   } catch (err) {
-    res.status(500).json({ error: "Registration error",
-                         message: err.message});
+    res.status(500).json({
+      success: false,
+      statusCode: 500,
+      code: 'SERVER_ERROR',
+      message: 'Internal server error',
+      data: {
+        message: err.message
+      }
+      
+    });
   }
 }
