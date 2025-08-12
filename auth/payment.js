@@ -1,5 +1,7 @@
 import omise from "omise"
 import logger from "../utils/logger.js"
+import Membership from "../models/Membership.js"
+import { User } from "../models/User.js"
 const omiseInstance = omise({
   secretKey: process.env.OMISE_SECRET_KEY,
   publicKey: process.env.OMISE_PUBLIC_KEY

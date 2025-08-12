@@ -41,7 +41,7 @@ app.use("/api-docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerSpe
 app.use(generalLimiter)
 app.use("/admin", adminRouter)
 app.use("/auth", authRouter)
-app.use("/api",authFromBearer, rateLimitMembership, logConsole, logMiddleware, apiRouter)
+app.use("/v1/api",authFromBearer, rateLimitMembership, logConsole, logMiddleware, apiRouter)
 app.post("/omise-webhook",webhook)
 app.get("/v1/swaggerJson", swaggerJson)
 app.use((err, req, res, next) => {
