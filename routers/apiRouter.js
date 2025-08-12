@@ -1,8 +1,8 @@
 import express from "express";
-import chart from "../api/chart.js"
-import quote from "../api/quote.js"
-import news from "../api/news.js"
-const apiRouter = express.Router()
+import chart from "../api/chart.js";
+import quote from "../api/quote.js";
+import news from "../api/news.js";
+const apiRouter = express.Router();
 /**
  * @swagger
  * /api/chart:
@@ -72,32 +72,114 @@ const apiRouter = express.Router()
  *                   type: string
  *                   example: Server Data Error
  */
-apiRouter.get('/chart',chart)
+apiRouter.get("/chart", chart);
+
 /**
  * @swagger
- * /api/quote/{symbol}:
+ * /api/quotes/{symbol}:
  *   get:
- *     summary: Get quote for stock symbol
+ *     summary: ดึงข้อมูลสรุปราคาหุ้นรายวันและราคาก่อน-หลังตลาด (pre/post market) จาก Yahoo Finance
+ *     tags:
+ *       - API
  *     security:
  *       - bearerAuth: []
- *     tags: [API]
  *     parameters:
- *       - name: symbol
- *         in: path
+ *       - in: path
+ *         name: symbol
  *         required: true
- *         description: Stock symbol (e.g., AAPL, TSLA)
  *         schema:
  *           type: string
+ *           example: EOSE
+ *         description: สัญลักษณ์หุ้น (ticker symbol) เช่น AAPL, MSFT, V เป็นต้น
  *     responses:
  *       200:
- *         description: Stock quote data
+ *         description: ข้อมูลราคาหุ้นและสถานะตลาด
  *         content:
  *           application/json:
- *             example:
- *               symbol: AAPL
- *               price: 173.72
- *               change: -2.10
- *               changePercent: -1.19%
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 summary:
+ *                   type: object
+ *                   properties:
+ *                     symbol:
+ *                       type: string
+ *                       example: EOSE
+ *                     longName:
+ *                       type: string
+ *                       example: Eos Energy Enterprises, Inc.
+ *                     shortName:
+ *                       type: string
+ *                       example: Eos Energy Enterprises, Inc.
+ *                     exchangeName:
+ *                       type: string
+ *                       example: NCM
+ *                     fullExchangeName:
+ *                       type: string
+ *                       example: NasdaqCM
+ *                     instrumentType:
+ *                       type: string
+ *                       example: EQUITY
+ *                     marketStatus:
+ *                       type: string
+ *                       enum: [PRE, REGULAR, POST, CLOSED]
+ *                       example: REGULAR
+ *                     regularMarketPrice:
+ *                       type: number
+ *                       example: 6.065
+ *                     regularMarketChange:
+ *                       type: number
+ *                       example: -0.305
+ *                     regularMarketChangePercent:
+ *                       type: number
+ *                       example: -4.79
+ *                     preMarketPrice:
+ *                       type: number
+ *                       example: 6.05
+ *                     preMarketPriceChange:
+ *                       type: number
+ *                       example: -0.32
+ *                     preMarketChangePercent:
+ *                       type: number
+ *                       example: -5.02
+ *                     chartPreviousClose:
+ *                       type: number
+ *                       example: 6.37
+ *                     priceHint:
+ *                       type: integer
+ *                       example: 2
+ *                     firstTradeDate:
+ *                       type: integer
+ *                       example: 1604327400
+ *                     regularMarketTime:
+ *                       type: integer
+ *                       example: 1755008347
+ *                     gmtoffset:
+ *                       type: integer
+ *                       example: -14400
+ *                     timezone:
+ *                       type: string
+ *                       example: EDT
+ *                     exchangeTimezoneName:
+ *                       type: string
+ *                       example: America/New_York
+ *                     currency:
+ *                       type: string
+ *                       example: USD
+ *                 error:
+ *                   type: object
+ *                   nullable: true
+ *                   example: null
+ *       500:
+ *         description: เกิดข้อผิดพลาดในการดึงข้อมูล
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Fetch error
  */
 apiRouter.get("/quote/:symbol", quote);
 /**
@@ -157,5 +239,5 @@ apiRouter.get("/quote/:symbol", quote);
  *                   type: string
  *                   example: Server Data Error
  */
-apiRouter.get("/news", news)
-export default apiRouter
+apiRouter.get("/news", news);
+export default apiRouter;
