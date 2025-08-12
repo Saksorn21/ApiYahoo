@@ -1,4 +1,5 @@
-
+import Membership from "../models/Membership.js"
+import { User } from "../models/User.js"
 export const webhook = (req, res) => {
   const event = req.body;
 
@@ -9,8 +10,12 @@ export const webhook = (req, res) => {
       if (charge.status === 'successful') {
         // เมื่อการชำระเงินสำเร็จจากช่องทางอื่นๆ (เช่น PromptPay, Internet Banking)
         // คุณสามารถอัปเดตสถานะการสั่งซื้อในฐานข้อมูลได้ที่นี่
+        const amount = charge.amount / 100 // Omise ใช้หน่วยเป็นสตางค์
+        const userId = charge.metadata.userId
+        
         console.log(`Webhook: Charge ${charge.id} is successful.`);
         console.log(`Order ID: ${charge.description}`);
+        console.log("data", charge)
       }
       break;
 
