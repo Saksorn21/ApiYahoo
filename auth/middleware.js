@@ -143,7 +143,12 @@ function isBase64Url(apiToken) {
 export const authFromBearer = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
   if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "No token " });
+    return res.status(401).json({ 
+      error: {
+      statusCode: 401,
+      code: 'BEARER_REQUIRED',
+      message: "Bearer token required in Authorization header (Authorization: Bearer <apiToken>)"
+      } });
   }
   const apiToken = authHeader.split(" ")[1];
   // กันคนส่ง headers ผิดรูปแบบ 

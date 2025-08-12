@@ -1,5 +1,5 @@
 import express from "express";
-import quote from "./quote.js";
+
 import { authLogin } from "../auth/login.js";
 import { authLogout } from "../auth/logout.js";
 import { getApiToken } from "../auth/apiToken.js";
@@ -130,7 +130,7 @@ authRouter.get("/dashboard", authFromCookie, checkLogin, (req, res) => {
  *       200:
  *         description: get API Token
  */
-authRouter.post("/apikey", authFromCookie, getApiToken);
+authRouter.post("/apikey", authFromCookie, checkLogin, getApiToken);
 /**
  * @swagger
  * /auth/refresh:
@@ -188,31 +188,5 @@ authRouter.post("/refresh", authFromCookie, refreshToken);
  *               message: 'chargeFailure_message'
  */
 authRouter.post("/payment", authFromCookie, payment);
-/**
- * @swagger
- * /api/quote/{symbol}:
- *   get:
- *     summary: Get quote for stock symbol
- *     security:
- *       - bearerAuth: []
- *     tags: [API]
- *     parameters:
- *       - name: symbol
- *         in: path
- *         required: true
- *         description: Stock symbol (e.g., AAPL, TSLA)
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Stock quote data
- *         content:
- *           application/json:
- *             example:
- *               symbol: AAPL
- *               price: 173.72
- *               change: -2.10
- *               changePercent: -1.19%
- */
-router.get("/quote/:symbol", quote);
+
 export default router;

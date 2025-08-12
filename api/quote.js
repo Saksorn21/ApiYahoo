@@ -1,6 +1,7 @@
-import axios from "axios";
+import axios from "../utils/axios.js";
 import * as cheerio from 'cheerio';
 import NodeCache from "node-cache";
+import logger from "../utils/logger.js"
 const cache = new NodeCache({ stdTTL: 300 }); 
 const headers = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
@@ -8,18 +9,17 @@ const headers = {
 
 
 export default async function quotes(req, res) {
-   const symbol = req.params.symbol.toUpperCase();
-     const cached = cache.get(symbol);
-     if (cached) return res.json({ symbol, price: cached });
-
+   const symbols = req.params.symbol.toUpperCase();
+     const cached = cache.get(symbols);
+     if (cached) return res.json(cached);
+  https://query1.finance.yahoo.com/v7/finance/quote?symbols=NVDA
      try {
-       const { data } = await axios.get(`https://finance.yahoo.com/quote/${symbol}`,{ headers })
-       const $ = cheerio.load(data);
-
-       const price = $('span[data-testid="qsp-price"]').first().text();
-       cache.set(symbol, price);
-       res.json({ symbol, price });
+       const { data } = await axios.get(`/v7/finance/quote?${symbols}`)
+       
+       cache.set(symbols, data);
+       res.json({data,error: null});
      } catch (err) {
+       logger.debug("quote error: ", err)
        res.status(500).json({ error: "Fetch error" });
      }
    }
@@ -97,7 +97,7 @@ console.error(error)
     }
 };
 const url = "https://query1.finance.yahoo.com/v8/finance/chart/NVDA?range=1d&interval=2m";
-
+/** 
 axios.get(url).then(res => {
   const result = res.data.chart.result[0];
   const lastClose = result.meta.regularMarketPrice;
@@ -105,4 +105,4 @@ axios.get(url).then(res => {
   console.log("ราคาล่าสุด BTC:", lastClose);
 });
 //getPrice("NVDA");
-
+*/
