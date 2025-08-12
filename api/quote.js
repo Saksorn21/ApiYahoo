@@ -9,15 +9,19 @@ const headers = {
 
 
 export default async function quotes(req, res) {
-   const symbols = req.params.symbol.toUpperCase();
-     const cached = cache.get(symbols);
+   const symbol = req.params.symbol.toUpperCase();
+     const cached = cache.get(symbol);
      if (cached) return res.json(cached);
-  https://query1.finance.yahoo.com/v7/finance/quote?symbols=NVDA
+  //https://query1.finance.yahoo.com/v8/finance/chart/V?interval=1d&range=1d
      try {
-       const { data } = await axios.get(`/v7/finance/quote?${symbols}`)
-       
-       cache.set(symbols, data);
-       res.json({data,error: null});
+       const { data } = await axios.get(`/v8/finance/chart/${symbol}?interval=1d&range=1d`)
+       const meta = data.chart.result[0].meta
+       delete meta.currentTradingPeriod
+       delete meta.validRanges
+       delete meta.dataGranularity
+       delete meta.range
+       cache.set(symbol, data);
+       res.json({summary: meta,error: null});
      } catch (err) {
        logger.debug("quote error: ", err)
        res.status(500).json({ error: "Fetch error" });

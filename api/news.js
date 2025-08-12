@@ -10,6 +10,7 @@ const news = async (req, res) => {
   try {
   const cached = cache.get(symbol)
     if(cached) return res.json(cached)
+    //https://query1.finance.yahoo.com/v1/finance/search?q=NVDA&newsCount=1&%20newsQueryId=news_stock
   const { data } = await axios.get(`/v1/finance/search?q=${symbol}&newsCount=${limit}`)
 cache.set(symbol, data)
     res.json({news: data.news, error: null})
