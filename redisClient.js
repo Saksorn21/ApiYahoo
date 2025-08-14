@@ -7,10 +7,16 @@ const redis = new Redis({
   port: process.env.REDIS_PORT,
   username: process.env.REDIS_USERNAME,
   password: process.env.REDIS_PASSWORD,
+  maxRetriesPerRequest: null
 
 });
 
-redis.on("connect", () => logger.debug("Redis connected"));
-redis.on("error", (err) => logger.debug("Redis error", err));
+redis.on("connect", () => {
+  console.log("🔍 Redis connected")
+  logger.debug("Redis connected")
+});
+redis.on("error", (err) => {
+  console.error("🔥 Redis error" , err)
+  logger.debug("Redis error", err)});
 
 export default redis;
