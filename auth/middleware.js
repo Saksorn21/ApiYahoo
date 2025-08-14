@@ -91,49 +91,88 @@ export const authFromCookie = async (req, res, next) => {
   }
 };
 
+// Middleware: checkLogin
 export const checkLogin = async (req, res, next) => {
-  const token = req.cookies.accessToken;
-  // ดึง session จาก Redis
-  const userId = res.user._id;
-  const savedToken = await redis.get(`session:${userId}`);
+    const accessToken = req.cookies.accessToken;
 
-  if (savedToken !== token) {
-    return res.status(403).json({ 
-      success: false,
-      statusCode: 403,
-      code: 'SESSION_EXPIRED',
-      message: "Session expired or logged in elsewhere" });
-  }
-
-  next();
-};
-export const preventAccessIfLoggedIn = async (req, res, next) => {
-  const token = req.cookies.accessToken;
-  if (!token) return next(); // ไม่มี token ให้ผ่าน
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET);
-    const userId = decoded.id;
-
-    const savedToken = await redis.get(`session:${userId}`);
-
-    if (savedToken === token) {
-      // Token ยัง valid และ session ยังอยู่ → ห้ามเข้า
-      return res.status(400).json({
-        success: false,
-        statusCode: 400,
-        code: 'ALREADY_LOGGED_IN',
-        message: 'You are already logged in'
-      });
+    if (!accessToken) {
+        return res.status(401).json({
+            success: false,
+            statusCode: 401,
+            code: 'NO_TOKEN',
+            message: "No token provided"
+        });
     }
 
-    // session ไม่มีหรือ token ไม่ตรง → อนุญาตให้เข้า (login หรือ register ใหม่)
-    next();
-  } catch (err) {
-    // token invalid หรือ expired → อนุญาตให้เข้า (login หรือ register ใหม่)
-    next();
-  }
+    try {
+        const decoded = jwt.verify(accessToken, process.env.JWT_LOGIN_SECRET);
+        const userId = decoded.id;
+
+        // ดึง accessToken ที่บันทึกไว้ใน Redis ด้วย userId
+        const savedToken = await redis.get(`session:${userId}`);
+
+        // ตรวจสอบว่า accessToken ที่ส่งมาตรงกับที่บันทึกไว้ใน Redis หรือไม่
+        if (savedToken !== accessToken) {
+            // ถ้าไม่ตรง แสดงว่า Session หมดอายุ หรือมีการล็อกอินจากเครื่องอื่น
+            return res.status(403).json({ 
+                success: false,
+                statusCode: 403,
+                code: 'SESSION_EXPIRED',
+                message: "Session expired or logged in elsewhere"
+            });
+        }
+
+        // ถ้าตรงกัน ให้หาข้อมูลผู้ใช้และส่งต่อไปยัง route
+        const user = await findUserByToken(accessToken);
+        res.user = user;
+        next();
+
+    } catch (err) {
+        // หาก accessToken ไม่ถูกต้องหรือหมดอายุ
+        return res.status(403).json({
+            success: false,
+            statusCode: 403,
+            code: 'INVALID_TOKEN',
+            message: "Invalid or expired token"
+        });
+    }
 };
+
+// Middleware: preventAccessIfLoggedIn
+export const preventAccessIfLoggedIn = async (req, res, next) => {
+    const accessToken = req.cookies.accessToken;
+    // ถ้าไม่มี accessToken ให้ผ่านไปได้เลย
+    if (!accessToken) {
+        return next();
+    }
+
+    try {
+        // ตรวจสอบความถูกต้องของ accessToken
+        const decoded = jwt.verify(accessToken, process.env.JWT_LOGIN_SECRET);
+        const userId = decoded.id;
+
+        const savedToken = await redis.get(`session:${userId}`);
+
+        // ถ้า Session ใน Redis ยังตรงกับ accessToken ที่ส่งมา
+        // ให้แจ้งเตือนว่าล็อกอินอยู่แล้ว
+        if (savedToken === accessToken) {
+            return res.status(400).json({
+                success: false,
+                statusCode: 400,
+                code: 'ALREADY_LOGGED_IN',
+                message: 'You are already logged in'
+            });
+        }
+
+        // ถ้า Session ไม่ตรงหรือหมดอายุ ให้ผ่านไป
+        next();
+
+    } catch (err) {
+        // ถ้า accessToken ไม่ถูกต้องหรือหมดอายุ ให้ผ่านไป
+        next();
+    }
+};
+
 function isBase64Url(apiToken) {
   const base64UrlRegex = /^[A-Za-z0-9-_]+$/
   return base64UrlRegex.test(apiToken)
