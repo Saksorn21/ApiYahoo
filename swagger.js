@@ -21,7 +21,12 @@ const swaggerOptions = {
       { name: "API", description: "Public API for clients" },
       { name: "Auth", description: "Authentication endpoints"}
     ],
-    servers: [{ url: "https://44c550b7-54f4-4174-bd1d-c51ff1e4f8c8-00-1wilq50r88xfl.janeway.replit.dev" }],
+    servers: [{ url: "https://44c550b7-54f4-4174-bd1d-c51ff1e4f8c8-00-1wilq50r88xfl.janeway.replit.dev",
+              description: "Dev Server API"
+              },{
+      url: "https://api-portsanp.up.railway.app",
+      description: "Server Railway API"
+    }],
   components: {
     securitySchemes: {
       bearerAuth: {
