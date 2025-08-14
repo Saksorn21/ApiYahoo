@@ -28,6 +28,7 @@ export const payment = async (req, res) =>{
       // ส่งคำตอบกลับไปหาลูกค้า
       logger.debug('Payment successful:', charge);
       res.status(200).json({ 
+        ok: true,
         message: 'Payment successful',
         chargeId: charge.id,
         status: charge.status,
@@ -36,6 +37,7 @@ export const payment = async (req, res) =>{
       // การชำระเงินไม่สำเร็จ
       logger.debug('Payment failed:', charge.failure_message);
       res.status(400).json({
+        ok: false,
         error: 'Payment failed',
         message: charge.failure_message,
       });
@@ -43,6 +45,7 @@ export const payment = async (req, res) =>{
 
     } catch (err) {
     console.error('Error during payment process:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ 
+      ok: false, error: 'Internal Server Error', message: err.message });
     }  
 }

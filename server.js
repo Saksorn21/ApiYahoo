@@ -9,9 +9,7 @@ import { generalLimiter, rateLimitMembership } from "./auth/rateLimit.js";
 import adminRouter from './routers/admin.js'
 import apiRouter from './routers/apiRouter.js'
 import swaggerUi from "swagger-ui-express";
-import redisClient from "./redisClient.js"
-import swaggerJSDoc from "swagger-jsdoc";
-import rateLimit from "express-rate-limit";
+import { corsOptionsDelegate } from "./cors.js"
 import cookieParser from "cookie-parser";
 
 import { logMiddleware, authFromBearer } from './auth/middleware.js'
@@ -33,7 +31,7 @@ const PORT = env.PORT || 5000
 mongoose.connect(process.env.MONGO_URI);
 
 app.use(express.json())
-app.use(cors())
+app.use(cors(corsOptionsDelegate))
 app.use(cookieParser());
 
 app.set("trust proxy", 1)
