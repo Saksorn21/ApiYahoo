@@ -4,13 +4,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const redis = new Redis(process.env.REDIS_URL, {
+  lazyConnect: true, // ไม่ connect จนกว่าจะเรียกใช้
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
-  lazyConnect: true, // ไม่ connect จนกว่าจะใช้
-  reconnectOnError: err => {
-    return err.message.includes("ECONNRESET");
+  reconnectOnError: err => err.message.includes("ECONNRESET"),
+  retryStrategy: times => {
+    // retry แบบ exponential backoff
+    return Math.min(50 * 2 ** times, 5000); // สูงสุด 5 วินาที
   },
-  retryStrategy: times => Math.min(times * 50, 30000),
   keepAlive: 30000,
 });
 
