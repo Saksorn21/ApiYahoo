@@ -50,7 +50,7 @@ app.use((err, req, res, next) => {
 app.use((req, res) => {
   res.status(404).json({ message: "API not found" });
 });
-connectRedis.then(() => {
+connectRedis().then(() => {
   console.log("🚀 Redis connected, starting server...");
 server.listen(PORT, ()=> console.log("📈 API ready at Port" + PORT));
 })
