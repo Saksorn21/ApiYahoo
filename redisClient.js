@@ -10,7 +10,7 @@ const devconnet = {
     maxRetriesPerRequest: null
 
   }
-const isProd = process.env.NODE_ENV === "production" ?{ url: process.env.REDISURL, maxRetriesPerRequest: null} : devconnet
+const isProd = process.env.NODE_ENV === "production" ?{ url: process.env.REDIS_PRIVATE_URL, maxRetriesPerRequest: null} : devconnet
 const redis = new Redis(isProd);
 
 redis.on("connect", () => {

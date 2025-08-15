@@ -149,7 +149,7 @@ export const preventAccessIfLoggedIn = async (req, res, next) => {
     try {
         // ตรวจสอบความถูกต้องของ accessToken
         const decoded = jwt.verify(accessToken, process.env.JWT_LOGIN_SECRET);
-        const userId = decoded._id;
+        const userId = decoded.id;
 
         const savedToken = await redis.get(`session:${userId}`);
 
