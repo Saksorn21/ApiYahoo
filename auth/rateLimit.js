@@ -1,5 +1,4 @@
 import rateLimit from "express-rate-limit";
-import Redis from "ioredis";
 import logger from "../utils/logger.js"
 import Membership from "../models/Membership.js"
 import redis from '../redisClient.js'
