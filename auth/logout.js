@@ -6,7 +6,7 @@ export async function authLogout(req, res) {
   if (!res.user) return res.status(401).json({ error: "Not logged in" });
 
   // ลบ session ใน Redis
-  await redis.del(`session:${res.user._id}`);
+  await redis.del(`session:${req.user._id}`);
 
   // ลบ cookie
   res.clearCookie("accessToken");

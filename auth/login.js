@@ -39,12 +39,16 @@ export const authLogin = async (req, res) => {
   await redis.set(`session:${user._id}`, accessToken, "EX", 24 * 60 * 60);
 
   // ใน login controller
+  const isProd = process.env.NODE_ENV === "production";
+
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict", // เพิ่มตัวนี้
+    secure: isProd, // ใช้ secure เฉพาะ prod
+    sameSite: isProd ? "strict" : "lax", // dev ใช้ lax จะง่ายกว่าเวลา cross-site
     maxAge: 60 * 60 * 1000,
-    domain: process.env.FONTEND_MAIN, // เพิ่มตัวนี้
+    domain: isProd
+      ? process.env.SERVER_BACKEND // ใช้ได้ทั้ง api.example.com และ app.example.com
+      : "https://44c550b7-54f4-4174-bd1d-c51ff1e4f8c8-00-1wilq50r88xfl.janeway.replit.dev" // dev ใช้ localhost
   });
 
 

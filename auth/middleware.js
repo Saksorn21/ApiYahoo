@@ -79,7 +79,7 @@ export const authFromCookie = async (req, res, next) => {
 
   try {
     const user = await findUserByToken(token)
-    res.user = user;
+    req.user = user;
     next();
   } catch (err) {
     logger.debug("Check Cookies Error: ", err)
@@ -124,7 +124,7 @@ export const checkLogin = async (req, res, next) => {
 
         // ถ้าตรงกัน ให้หาข้อมูลผู้ใช้และส่งต่อไปยัง route
         const user = await findUserByToken(accessToken);
-        res.user = user;
+        req.user = user;
         next();
 
     } catch (err) {
