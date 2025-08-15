@@ -37,7 +37,7 @@ app.use(cookieParser());
 
 app.set("trust proxy", 1)
 app.use("/api-docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use(generalLimiter)
+//app.use(generalLimiter)
 app.use("/admin", adminRouter)
 app.use("/auth", authRouter)
 app.use("/v1/api",authFromBearer, rateLimitMembership, logConsole, logMiddleware, apiRouter)
