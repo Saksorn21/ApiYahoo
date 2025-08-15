@@ -47,8 +47,8 @@ export const authLogin = async (req, res) => {
     sameSite: isProd ? "strict" : "lax", // dev ใช้ lax จะง่ายกว่าเวลา cross-site
     maxAge: 60 * 60 * 1000,
     domain: isProd
-      ? process.env.SERVER_BACKEND // ใช้ได้ทั้ง api.example.com และ app.example.com
-      : "44c550b7-54f4-4174-bd1d-c51ff1e4f8c8-00-1wilq50r88xfl.janeway.replit.dev" // dev ใช้ localhost
+      ? process.env.COOKIE_SERVICE // ใช้ได้ทั้ง api.example.com และ app.example.com
+      : ".janeway.replit.dev" // dev ใช้ localhost
   });
 
 
