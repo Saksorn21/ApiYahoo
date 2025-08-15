@@ -3,33 +3,16 @@ import logger from "./utils/logger.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-const devConnect = {
-  host: process.env.REDIS_HOST,
-  port: parseInt(process.env.REDIS_PORT, 10),
-  username: process.env.REDIS_USERNAME,
-  password: process.env.REDIS_PASSWORD,
+const redis = new Redis(process.env.REDIS_URL, {
   maxRetriesPerRequest: null,
-  retryStrategy: times => {
-    // retry ทุก 2^n * 100 ms สูงสุด 30s
-    const delay = Math.min(times * 50, 30000);
-    return delay;
+  enableReadyCheck: false,
+  lazyConnect: true, // ไม่ connect จนกว่าจะใช้
+  reconnectOnError: err => {
+    return err.message.includes("ECONNRESET");
   },
-  keepAlive: 30000, // keepalive 30 วินาที
-};
-
-const redis = process.env.NODE_ENV === "production"
-  ? new Redis(process.env.REDIS_URL, {
-      maxRetriesPerRequest: null,
-      enableReadyCheck: false,
-      reconnectOnError: err => {
-        console.error("Redis reconnectOnError", err.message);
-        // reconnect ถ้าเป็น ECONNRESET
-        return err.message.includes("ECONNRESET");
-      },
-      retryStrategy: times => Math.min(times * 50, 30000),
-      keepAlive: 30000,
-    })
-  : new Redis(devConnect);
+  retryStrategy: times => Math.min(times * 50, 30000),
+  keepAlive: 30000,
+});
 
 redis.on("connect", () => {
   console.log("🔍 Redis connected");
@@ -41,9 +24,19 @@ redis.on("error", (err) => {
   logger.debug("Redis error", err);
 });
 
-// reconnect log
 redis.on("reconnecting", (time) => {
   console.log(`♻️ Redis reconnecting in ${time}ms`);
 });
+
+// ฟังก์ชันเชื่อมต่อแบบมั่นใจ
+export async function connectRedis() {
+  try {
+    await redis.connect();
+    console.log("✅ Redis fully connected");
+  } catch (err) {
+    console.error("❌ Redis failed to connect", err);
+    setTimeout(connectRedis, 1000); // retry ทุก 1 วิ
+  }
+}
 
 export default redis;
