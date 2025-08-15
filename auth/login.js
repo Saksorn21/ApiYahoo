@@ -1,7 +1,6 @@
 import { User } from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import TokenModel from "../models/Token.js";
 import redis from "../redisClient.js";
 export const authLogin = async (req, res) => {
   const { identifier, password } = req.body; // เปลี่ยนเป็น identifier ครอบคลุมทั้ง email หรือ username
@@ -39,11 +38,15 @@ export const authLogin = async (req, res) => {
 
   await redis.set(`session:${user._id}`, accessToken, "EX", 24 * 60 * 60);
 
+  // ใน login controller
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // https เท่านั้น
-    maxAge: 60 * 60 * 1000  // 1 ชม.
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict", // เพิ่มตัวนี้
+    maxAge: 60 * 60 * 1000,
+    domain: process.env.FONTEND_MAIN, // เพิ่มตัวนี้
   });
+
 
   res.status(200).json({
     success: true,
