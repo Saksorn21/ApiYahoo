@@ -1,26 +1,28 @@
 import Redis from "ioredis";
-import logger from "./utils/logger.js"
-import dotenv from "dotenv"
-dotenv.config()
-const devconnet = {
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-    username: process.env.REDIS_USERNAME,
-    password: process.env.REDIS_PASSWORD,
-    maxRetriesPerRequest: null
+import logger from "./utils/logger.js";
+import dotenv from "dotenv";
+dotenv.config();
 
-  }
-const isProd = process.env.NODE_ENV === "production" ?{ url: process.env.REDIS_PRIVATE_URL, maxRetriesPerRequest: null, enableReadyCheck: false } : devconnet
-const redis = new Redis(isProd);
+const devConnect = {
+  host: process.env.REDIS_HOST,
+  port: parseInt(process.env.REDIS_PORT, 10),
+  username: process.env.REDIS_USERNAME,
+  password: process.env.REDIS_PASSWORD,
+  maxRetriesPerRequest: null
+};
+
+const redis = process.env.NODE_ENV === "production"
+  ? new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false })
+  : new Redis(devConnect);
 
 redis.on("connect", () => {
-  console.log("🔍 Redis connected")
-  console.log(process.env.REDIS_PRIVATE_URL)
-  logger.debug("Redis connected")
+  console.log("🔍 Redis connected");
+  logger.debug("Redis connected");
 });
+
 redis.on("error", (err) => {
-  console.log(process.env.REDIS_PRIVATE_URL)
-  console.error("🔥 Redis error" , err)
-  logger.debug("Redis error", err)});
+  console.error("🔥 Redis error", err);
+  logger.debug("Redis error", err);
+});
 
 export default redis;
