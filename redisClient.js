@@ -2,14 +2,16 @@ import Redis from "ioredis";
 import logger from "./utils/logger.js"
 import dotenv from "dotenv"
 dotenv.config()
-const redis = new Redis({
-  host: process.env.REDIS_HOST,
-  port: process.env.REDIS_PORT,
-  username: process.env.REDIS_USERNAME,
-  password: process.env.REDIS_PASSWORD,
-  maxRetriesPerRequest: null
+const devconnet = {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    username: process.env.REDIS_USERNAME,
+    password: process.env.REDIS_PASSWORD,
+    maxRetriesPerRequest: null
 
-});
+  }
+const isProd = process.env.NODE_ENV === "production" ?{ url: process.env.REDISURL, maxRetriesPerRequest: null} : devconnet
+const redis = new Redis(isProd);
 
 redis.on("connect", () => {
   console.log("🔍 Redis connected")
