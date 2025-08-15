@@ -12,7 +12,7 @@ const devconnet = {
   }
 const isProd = process.env.NODE_ENV === "production" ?{ url: process.env.REDIS_PRIVATE_URL, maxRetriesPerRequest: null, enableReadyCheck: false } : devconnet
 const redis = new Redis(isProd);
-
+console.log(process.env.REDIS_PRIVATE_URL)
 redis.on("connect", () => {
   console.log("🔍 Redis connected")
   logger.debug("Redis connected")
