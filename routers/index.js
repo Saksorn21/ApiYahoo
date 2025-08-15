@@ -5,6 +5,7 @@ import { authLogout } from "../auth/logout.js";
 import { getApiToken } from "../auth/apiToken.js";
 import { authRegister } from "../auth/register.js";
 import { refreshToken } from "../auth/refresh.js";
+import getMe from "../auth/me.js"
 import {
   authFromCookie,
   checkLogin,
@@ -108,6 +109,7 @@ authRouter.post("/register", preventAccessIfLoggedIn, authRegister);
 authRouter.get("/dashboard", authFromCookie, checkLogin, (req, res) => {
   res.json({ msg: `Hello ${req.user.username}` });
 });
+authRouter.get("/me", authFromCookie, checkLogin, getMe)
 /**
  * @swagger
  * /auth/apikey:
