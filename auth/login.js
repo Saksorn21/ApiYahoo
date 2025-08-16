@@ -35,7 +35,7 @@ export const authLogin = async (req, res) => {
     process.env.JWT_LOGIN_SECRET,
     { expiresIn: process.env.JWT_EXPIRES }
   );
-
+  req.token = accessToken
   await redis.set(`session:${user._id}`, accessToken, "EX", 24 * 60 * 60);
 
   // ใน login controller
@@ -48,7 +48,7 @@ export const authLogin = async (req, res) => {
     maxAge: 60 * 60 * 1000,
     domain: isProd
       ? process.env.COOKIE_SERVICE // ใช้ได้ทั้ง api.example.com และ app.example.com
-      : ".janeway.replit.dev" // dev ใช้ localhost
+      : "44c550b7-54f4-4174-bd1d-c51ff1e4f8c8-00-1wilq50r88xfl.janeway.replit.dev" // dev ใช้ localhost
   });
 
 

@@ -69,7 +69,7 @@ export const authenticateToken = async (req, res, next) => {
 export const authFromCookie = async (req, res, next) => {
   const token = req.cookies.accessToken;
   if (!token) {
-    logger.debug("adminCheck token Error: ", token)
+    logger.debug("Check Coolkie token Error: ", token)
     return res.status(401).json({ 
     success: false,
     statusCode: 401,
@@ -80,6 +80,7 @@ export const authFromCookie = async (req, res, next) => {
   try {
     const user = await findUserByToken(token)
     req.user = user;
+    req.token = token
     next();
   } catch (err) {
     logger.debug("Check Cookies Error: ", err)
@@ -93,9 +94,10 @@ export const authFromCookie = async (req, res, next) => {
 
 // Middleware: checkLogin
 export const checkLogin = async (req, res, next) => {
-    const accessToken = req.cookies.accessToken;
+    const accessToken = req.cookies.accessToken || req.token
 
     if (!accessToken) {
+      logger.debug("checkLogin error", accessToken)
         return res.status(401).json({
             success: false,
             statusCode: 401,
@@ -156,6 +158,7 @@ export const preventAccessIfLoggedIn = async (req, res, next) => {
         // ถ้า Session ใน Redis ยังตรงกับ accessToken ที่ส่งมา
         // ให้แจ้งเตือนว่าล็อกอินอยู่แล้ว
         if (savedToken === accessToken) {
+          req.token = accessToken
             return res.status(400).json({
                 success: false,
                 statusCode: 400,

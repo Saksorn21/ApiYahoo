@@ -3,7 +3,7 @@ import logger from "../utils/logger.js"
 export async function authLogout(req, res) {
   try {
   
-  if (!res.user) return res.status(401).json({ error: "Not logged in" });
+  if (!req.user) return res.status(401).json({ error: "Not logged in" });
 
   // ลบ session ใน Redis
   await redis.del(`session:${req.user._id}`);
