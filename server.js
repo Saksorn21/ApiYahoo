@@ -9,7 +9,7 @@ import { generalLimiter, rateLimitMembership } from "./auth/rateLimit.js";
 import adminRouter from './routers/admin.js'
 import apiRouter from './routers/apiRouter.js'
 import swaggerUi from "swagger-ui-express";
-import { connectRedis } from './redisClient.js'
+
 import { corsOptionsDelegate } from "./cors.js"
 import cookieParser from "cookie-parser";
 
@@ -37,7 +37,7 @@ app.use(cookieParser());
 
 app.set("trust proxy", 1)
 app.use("/api-docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-//app.use(generalLimiter)
+app.use(generalLimiter)
 app.use("/admin", adminRouter)
 app.use("/auth", authRouter)
 app.use("/v1/api",authFromBearer, rateLimitMembership, logConsole, logMiddleware, apiRouter)
@@ -50,7 +50,4 @@ app.use((err, req, res, next) => {
 app.use((req, res) => {
   res.status(404).json({ message: "API not found" });
 });
-connectRedis().then(() => {
-  console.log("🚀 Redis connected, starting server...");
 server.listen(PORT, ()=> console.log("📈 API ready at Port" + PORT));
-})
