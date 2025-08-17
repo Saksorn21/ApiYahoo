@@ -14,7 +14,7 @@ export const getApiToken = async (req, res) => {
   const expiresIn = req.body.expiresIn;
     if(!expiresIn) return res.status(400).json({ error: "Missing expiresIn"})
   // ส่งมาจาก middleware ตรวจสอบ cookie access token
-  const username = res.user.username
+  const username = req.user.username
     if(!username) return res.status(400).json({
       success: false,
       statusCode: 400,

@@ -25,7 +25,7 @@ dotenv.config()
 const env = process.env
 const app = express()
 const server = http.createServer(app);
-
+const swaggerJs = swaggerUi
 const io = await initSocket(server);
  logger.setSocketIO(io)
 const PORT = env.PORT || 5000
@@ -36,7 +36,7 @@ app.use(cors(corsOptionsDelegate))
 app.use(cookieParser());
 
 app.set("trust proxy", 1)
-app.use("/api-docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.use("/api-docs", swaggerLimiter, swaggerJs.serve, swaggerJs.setup(swaggerSpec))
 app.use("/docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 app.use(generalLimiter)
 app.use("/admin", adminRouter)
