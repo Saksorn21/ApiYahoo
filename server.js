@@ -4,7 +4,7 @@ import cors from "cors"
 import http from 'http';
 import mongoose from "mongoose"
 import router, { authRouter } from "./routers/index.js"
-import { swaggerJson, swaggerSpec, swaggerLimiter } from "./swagger.js"
+import { swaggerJson, swaggerSpec, swaggerLimiter, swaggerDocument } from "./swagger.js"
 import { generalLimiter, rateLimitMembership } from "./auth/rateLimit.js";
 import adminRouter from './routers/admin.js'
 import apiRouter from './routers/apiRouter.js'
@@ -36,7 +36,8 @@ app.use(cors(corsOptionsDelegate))
 app.use(cookieParser());
 
 app.set("trust proxy", 1)
-app.use("/api-docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api-docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.use("/docs", swaggerLimiter, swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 app.use(generalLimiter)
 app.use("/admin", adminRouter)
 app.use("/auth", authRouter)

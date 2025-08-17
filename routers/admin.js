@@ -4,8 +4,102 @@ import { User } from "../models/User.js";
 import Membership from "../models/Membership.js";
 import LogModel from "../models/Log.js";
 import { authFromCookie, adminCheck } from "../auth/middleware.js";
-
+import NodeCache from "node-cache";
+import getDashboardInfo from "../auth/admin/getDashboardInfo.js"
+import { autoComplete } from "../auth/admin/autocomplete.js"
+import { getUsers, getTokens, getLogs } from "../auth/admin/getModels.js"
 const routerAdmin = express.Router();
+
+const adminCache = new NodeCache({ stdTTL: 3600 }); // TTL = 1 ชั่วโมง
+/**
+ * @swagger
+ * /admin/info:
+ *   get:
+ *     summary: แสดงข้อมูลสรุปสำหรับ Dashboard Admin
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: ข้อมูลสถิติสรุป
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 summary:
+ *                   type: object
+ *                   properties:
+ *                     users:
+ *                       type: integer
+ *                     memberships:
+ *                       type: integer
+ *                     tokens:
+ *                       type: integer
+ *                     logs:
+ *                       type: integer
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     newUsersToday:
+ *                       type: integer
+ *                     newUsersThisWeek:
+ *                       type: integer
+ *                     activeUsersLast7Days:
+ *                       type: integer
+ *                     membershipBreakdown:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: integer
+ *                       example:
+ *                         free: 120
+ *                         pro: 35
+ *                         enterprise: 5
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+  
+ routerAdmin.get("/info", authFromCookie, adminCheck, async (req, res) => {
+    const cached = adminCache.get("dashboard_info");
+    if (cached) return res.json(cached);
+
+    const data = await getDashboardInfo();
+    adminCache.set("dashboard_info", data);
+    res.json(data);
+  });
+
+  // ✅ refresh cache (กดดึงข้อมูลสด)
+/**
+ * @swagger
+ * /admin/info/refresh:
+ *   get:
+ *     summary: Refresh dashboard summary (ไม่ใช้ cache)
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: ข้อมูลสรุปล่าสุด (refresh แล้ว cache ใหม่)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 refreshed:
+ *                   type: boolean
+ *                   example: true
+ *                 summary:
+ *                   type: object
+ *                 stats:
+ *                   type: object
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+routerAdmin.get("/info/refresh", authFromCookie, adminCheck, async (req, res) => {
+    const data = await getDashboardInfo();
+    adminCache.set("dashboard_info", data);
+    res.json({ refreshed: true, ...data });
+  });
 /**
  * @swagger
  * /admin/users:
@@ -89,105 +183,60 @@ const routerAdmin = express.Router();
  *         description: Forbidden
  */
 // แสดงผู้ใช้งานแชะ memberships
-routerAdmin.get("/users", authFromCookie, adminCheck, async (req, res) => {
-  const search = req.query.search || "";
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const skip = (page - 1) * limit;
-
-  const pipeline = [
-    {
-      $match: {
-        username: { $regex: "^" + search, $options: "i" },
-      },
-    },
-    {
-      $lookup: {
-        from: "memberships",
-        localField: "_id",
-        foreignField: "userId",
-        as: "membership",
-      },
-    },
-    { $unwind: { path: "$membership", preserveNullAndEmptyArrays: true } },
-    { $project: { password: 0, __v: 0, "membership.__v": 0 } },
-    {
-      $facet: {
-        data: [{ $sort: { username: 1 } }, { $skip: skip }, { $limit: limit }],
-        totalCount: [{ $count: "count" }],
-      },
-    },
-  ];
-
-  const result = await User.aggregate(pipeline);
-  const usersWithMemberships = result[0].data;
-  const total = result[0].totalCount[0]?.count || 0;
-
-  res.json({
-    data: usersWithMemberships,
-    total,
-    page,
-    pages: Math.ceil(total / limit),
-  });
-});
+routerAdmin.get("/users", authFromCookie, adminCheck, getUsers);
 
 /**
  * @swagger
- * /admin/users/autocomplete:
+ * /admin/autocomplete:
  *   get:
- *     summary: Auto-complete ค้นหาผู้ใช้ (prefix search)
+ *     summary: Autocomplete username for users, tokens, or logs
  *     tags: [Admin]
  *     parameters:
  *       - in: query
- *         name: search
- *         required: true
+ *         name: type
  *         schema:
  *           type: string
- *         description: คำค้นหา (prefix) เช่น 'b'
+ *           enum: [users, tokens, logs]
+ *         required: true
+ *         description: Type of autocomplete search
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Search keyword (prefix match)
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *           default: 5
- *         description: จำนวนผลลัพธ์สูงสุด
+ *         required: false
+ *         description: Maximum number of results (default 5)
  *     responses:
  *       200:
- *         description: รายชื่อ username ที่ match
+ *         description: List of matching usernames
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 type: string
- *                 example: boat
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden
+ *                 example: "boat123"
+ *       400:
+ *         description: Invalid type parameter
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid type"
  */
 routerAdmin.get(
   "/users/autocomplete",
   authFromCookie,
   adminCheck,
-  async (req, res) => {
-    const search = req.query.search || "";
-    const limit = parseInt(req.query.limit) || 5;
-
-    if (!search) return res.json([]); // ถ้าไม่มี search ก็ไม่ต้องส่งอะไร
-
-    const users = await User.aggregate([
-      {
-        $match: { username: { $regex: "^" + search, $options: "i" } },
-      },
-      {
-        $project: { username: 1, _id: 0 }, // ส่งเฉพาะ field ที่ต้องใช้
-      },
-      { $sort: { username: 1 } },
-      { $limit: limit },
-    ]);
-
-    res.json(users.map((u) => u.username));
-  },
+  autoComplete
 );
 /**
  * @swagger
@@ -307,30 +356,6 @@ routerAdmin.get(
  *         description: Unauthorized
  *       403:
  *         description: Forbidden
- *
- *   delete:
- *     summary: ลบ membership
- *     tags: [Admin]
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *         description: ObjectId ของผู้ใช้
- *     responses:
- *       200:
- *         description: ลบ membership สำเร็จ
- *         content:
- *           application/json:
- *             example:
- *               message: "Membership deleted successfully"
- *       404:
- *         description: ไม่พบ membership
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden
  */
 // แก้ไขข้อมูลผู้ใช้งาน
 routerAdmin.put("/users/:id", authFromCookie, adminCheck, async (req, res) => {
@@ -353,20 +378,21 @@ routerAdmin.put("/users/:id", authFromCookie, adminCheck, async (req, res) => {
       return res.status(404).json({
         success: false,
         statusCode: 404,
-        code: 'USER_NOT_FOUND',
+        code: "USER_NOT_FOUND",
         message: "User not found",
-      data: null,
-        error: null
+        data: null,
+        error: null,
       });
     }
 
     res.json({
       success: true,
       statusCode: 200,
-      code: 'UPDATE_USER_SUCCESS',
+      code: "UPDATE_USER_SUCCESS",
       message: "Update user successful",
       data: updatedUser,
-    error: null});
+      error: null,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -382,24 +408,25 @@ routerAdmin.delete(
       const deletedUser = await User.findByIdAndDelete(req.params.id);
 
       if (!deletedUser) {
-      return res.status(404).json({
-        success: false,
-        statusCode: 404,
-        code: 'USER_NOT_FOUND',
-        message: "User not found",
-      data: null,
-        error: null
-      });
-        }
+        return res.status(404).json({
+          success: false,
+          statusCode: 404,
+          code: "USER_NOT_FOUND",
+          message: "User not found",
+          data: null,
+          error: null,
+        });
+      }
 
       // ลบ membership ที่ผูกกับ user
       await Membership.findOneAndDelete({ userId: req.params.id });
 
-      res.json({ 
+      res.json({
         success: true,
         statusCode: 200,
-        code: 'DELETE_USER_SUCCESS',
-        message: "User and membership deleted successfully" });
+        code: "DELETE_USER_SUCCESS",
+        message: "User and membership deleted successfully",
+      });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -439,42 +466,6 @@ routerAdmin.put(
   },
 );
 
-// ลบ membership
-routerAdmin.delete(
-  "/memberships/:userId",
-  authFromCookie,
-  adminCheck,
-  async (req, res) => {
-    try {
-      const deletedMembership = await Membership.findOneAndDelete({
-        userId: req.params.userId,
-      });
-
-      if (!deletedMembership) {
-        return res.status(404).json({ error: "Membership not found" });
-      }
-
-      res.json({ message: "Membership deleted successfully" });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-);
-/**
- * @swagger
- * /admin/tokens:
- *   get:
- *     summary: get all tokens
- *     tags: [Admin]
- *     responses:
- *       200:
- *         description: OK
- */
-routerAdmin.get("/tokens", authFromCookie, adminCheck, async (req, res) => {
-  const tokens = await TokenModel.find().select("-__v");
-  res.json(tokens);
-});
-
 /**
  * @swagger
  * /admin/token/{id}:
@@ -507,17 +498,90 @@ routerAdmin.delete(
 
 /**
  * @swagger
- * /admin/logs:
+ * /admin/tokens:
  *   get:
- *     summary: Get logs
+ *     summary: Get all tokens with username
  *     tags: [Admin]
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Search by user
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Items per page
  *     responses:
  *       200:
- *         description: OK
+ *         description: List of tokens
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       token:
+ *                         type: string
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       expiresAt:
+ *                         type: string
+ *                         format: date-time
+ *                       user:
+ *                         type: object
+ *                         properties:
+ *                           username:
+ *                             type: string
+ *                 total:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 pages:
+ *                   type: integer
  */
-routerAdmin.get("/logs", authFromCookie, adminCheck, async (req, res) => {
-  const logs = await LogModel.find().sort({ createdAt: -1 }).limit(100);
-  res.json(logs);
-});
+routerAdmin.get("/tokens", authFromCookie, adminCheck, getTokens);
+/**
+ * @swagger
+ * /admin/logs:
+ *   get:
+ *     summary: Get system logs
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Search by user, action, endpoint, method, or IP
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Page number (optional, ignored if not provided)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Number of logs per page (optional, ignored if not provided)
+ *     responses:
+ *       200:
+ *         description: List of logs
+ */
+routerAdmin.get("/logs", authFromCookie, adminCheck, getLogs);
 
 export default routerAdmin;

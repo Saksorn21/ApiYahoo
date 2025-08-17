@@ -1,0 +1,77 @@
+/admin/users:
+  get:
+    summary: Get users with membership info
+    tags: 
+      - Admin
+    parameters:
+      - in: query
+        name: search
+        schema:
+          type: string
+        required: false
+        description: Search by username prefix
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: Items per page
+    responses:
+      '200':
+        description: List of users with membership
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                      username:
+                        type: string
+                      email:
+                        type: string
+                      role:
+                        type: string
+                        enum: [user, admin]
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                      membership:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                          membershipLevel:
+                            type: string
+                            enum: [free, pro, enterprise]
+                          apiRequestCount:
+                            type: number
+                          apiRequestReset:
+                            type: string
+                            format: date-time
+                          createdAt:
+                            type: string
+                            format: date-time
+                          updatedAt:
+                            type: string
+                            format: date-time
+                total:
+                  type: integer
+                page:
+                  type: integer
+                pages:
+                  type: integer

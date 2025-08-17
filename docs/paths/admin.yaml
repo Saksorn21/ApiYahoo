@@ -1,0 +1,527 @@
+/admin/info:
+  get:
+    summary: แสดงข้อมูลสรุปสำหรับ Dashboard Admin
+    tags:
+      - Admin
+    responses:
+      '200':
+        description: ข้อมูลสถิติสรุป
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                summary:
+                  type: object
+                  properties:
+                    users:
+                      type: integer
+                    memberships:
+                      type: integer
+                    tokens:
+                      type: integer
+                    logs:
+                      type: integer
+                stats:
+                  type: object
+                  properties:
+                    newUsersToday:
+                      type: integer
+                    newUsersThisWeek:
+                      type: integer
+                    activeUsersLast7Days:
+                      type: integer
+                    membershipBreakdown:
+                      type: object
+                      additionalProperties:
+                        type: integer
+                      example:
+                        free: 120
+                        pro: 35
+                        enterprise: 5
+      '401':
+        description: Unauthorized
+      '403':
+        description: Forbidden
+
+/admin/info/refresh:
+  get:
+    summary: Refresh dashboard summary (ไม่ใช้ cache)
+    tags: 
+      - Admin
+    responses:
+      '200':
+        description: ข้อมูลสรุปล่าสุด (refresh แล้ว cache ใหม่)
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshed:
+                  type: boolean
+                  example: true
+                summary:
+                  type: object
+                stats:
+                  type: object
+      '401':
+        description: Unauthorized
+      '403':
+        description: Forbidden
+ 
+/admin/users:
+  get:
+    summary: Get users with membership info
+    tags: 
+      - Admin
+    parameters:
+      - in: query
+        name: search
+        schema:
+          type: string
+        required: false
+        description: Search by username prefix
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: Items per page
+    responses:
+      '200':
+        description: List of users with membership
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                      username:
+                        type: string
+                      email:
+                        type: string
+                      role:
+                        type: string
+                        enum: [user, admin]
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                      membership:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                          membershipLevel:
+                            type: string
+                            enum: [free, pro, enterprise]
+                          apiRequestCount:
+                            type: number
+                          apiRequestReset:
+                            type: string
+                            format: date-time
+                          createdAt:
+                            type: string
+                            format: date-time
+                          updatedAt:
+                            type: string
+                            format: date-time
+                total:
+                  type: integer
+                page:
+                  type: integer
+                pages:
+                  type: integer
+
+/admin/users/{id}:
+  put:
+    summary: แก้ไขข้อมูลผู้ใช้งาน
+    tags: 
+      - Admin
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: ObjectId ของผู้ใช้
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+              email:
+                type: string
+              role:
+                type: string
+                enum: [user, admin]
+    responses:
+      '200':
+        description: ข้อมูลผู้ใช้งานที่แก้ไขแล้ว
+        content:
+          application/json:
+            example:
+              _id: 64dfb9d92d1b8c2f3b4f5678
+              username: usertest
+              email: test@example.com
+              role: admin
+              createdAt: 2025-08-12T07:25:12.123Z
+              updatedAt: 2025-08-12T07:40:00.456Z
+      '404':
+        description: ไม่พบผู้ใช้งาน
+      '401':
+        description: Unauthorized
+      '403':
+        description: Forbidden
+
+  delete:
+    summary: ลบผู้ใช้งานและ membership ที่เกี่ยวข้อง
+    tags: 
+      - Admin
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: ObjectId ของผู้ใช้
+    responses:
+      '200':
+        description: ลบสำเร็จ
+        content:
+          application/json:
+            example:
+              message: User and membership deleted successfully
+      '404':
+        description: ไม่พบผู้ใช้งาน
+      '401':
+        description: Unauthorized
+      '403':
+        description: Forbidden
+
+/admin/memberships/{userId}:
+  put:
+    summary: แก้ไขข้อมูล membership
+    tags: [Admin]
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        schema:
+          type: string
+        description: ObjectId ของผู้ใช้
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              membershipLevel:
+                type: string
+                enum: [free, pro, enterprise]
+              apiRequestCount:
+                type: integer
+              apiRequestReset:
+                type: string
+                format: date-time
+    responses:
+      '200':
+        description: ข้อมูล membership ที่แก้ไขแล้ว
+        content:
+          application/json:
+            example:
+              _id: 750aa3a12f9b6c1234567246
+              userId: 64dfb9d92d1b8c2f3b4f5924
+              membershipLevel: pro
+              apiRequestCount: 120
+              apiRequestReset: 2025-09-01T00:00:00.000Z
+              createdAt: 2025-08-01T07:00:00.000Z
+              updatedAt: 2025-08-12T08:00:00.000Z
+      '404':
+        description: ไม่พบ membership
+      '401':
+        description: Unauthorized
+      '403':
+        description: Forbidden
+
+/admin/tokens:
+  get:
+    summary: Get all tokens with username
+    tags: 
+      - Admin
+    parameters:
+      - in: query
+        name: search
+        schema:
+          type: string
+        required: false
+        description: Search by user prefix
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: Items per page
+    responses:
+      '200':
+        description: List of tokens
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                      expiresAt:
+                        type: string
+                        format: date-time
+                      user:
+                        type: object
+                        properties:
+                          username:
+                            type: string
+                total:
+                  type: integer
+                page:
+                  type: integer
+                pages:
+                  type: integer
+
+/admin/token/{id}:
+  put:
+    summary: Update expiration date apiToken by ID
+    tags:
+      - Admin
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Token ID
+        schema:
+          type: string
+          example: 64dfb8d92d1b8c3f3b4f5678
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              expiresIn:
+                type: string
+                enum: [1h, 1d, 7d, 30d, 1y]
+                example: 7d
+                description: New expiration time for the apiToken
+                required: true
+    responses:
+      '200':
+        description: Token updated successfully
+      '404':
+        description: Token not found
+      '400':
+        description: Invalid expiresIn value
+      '500':
+        description: Internal server error
+
+  delete:
+    summary: Delete token by ID
+    tags: 
+      - Admin
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Token ID
+        schema:
+          type: string
+    responses:
+      200:
+        description: OK
+      '404':
+        description: Token not found
+ 
+/admin/logs:
+  get:
+    summary: Get all logs
+    tags: 
+      - Admin
+    parameters:
+      - in: query
+        name: search
+        schema:
+          type: string
+        required: false
+        description: Search by user/action/endpoint/method/IP
+      - in: query
+        name: page
+        schema:
+          type: integer
+          required: false
+          description: Page number (optional)
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          required: false
+          description: Items per page (optional)
+    responses:
+      '200':
+        description: List of logs
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      user:
+                        type: string
+                      action:
+                        type: string
+                      ip:
+                        type: string
+                      tokenId:
+                        type: string
+                      endpoint:
+                        type: string
+                      method:
+                        type: string
+                      statusCode:
+                        type: integer
+                      responseTime:
+                        type: number
+                      timestamp:
+                        type: string
+                        format: date-time
+                total:
+                  type: integer
+                page:
+                  type: integer
+                pages:
+                  type: integer
+  delete:
+    summary: Delete logs for a specified month
+    tags:
+      - Admin
+    parameters:
+      - in: query
+        name: month
+        schema:
+          type: string
+          format: date
+          example: 2023-10
+        required: true
+        description: Month to delete logs (format YYYY-MM)
+    responses:
+      '200':
+        description: Logs deleted (2023-10 to 2024-08) successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lastMonth:
+                  type: string
+                  example: 2024-09
+                month:
+                  type: string
+                  example: 2023-10
+                maxMonth:
+                  type: string
+                  example: 2024-08
+                count:
+                  type: integer
+                  example: 1234
+                message:
+                  type: string
+                  example: Logs deleted successfully
+      '400':
+        description: Invalid month format (must be YYYY-MM) or month out of range
+      '401':
+        description: Unauthorized
+      '403':
+        description: Forbidden
+      '500':
+        description: Internal server error
+
+/admin/autocomplete:
+  get:
+    summary: Autocomplete username for users, tokens, or logs
+    tags:
+      - Admin
+    parameters:
+      - in: query
+        name: type
+        schema:
+          type: string
+          enum: [users, tokens, logs]
+        required: true
+        description: Type of autocomplete search
+      - in: query
+        name: search
+        schema:
+          type: string
+        required: true
+        description: Search keyword (prefix match)
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        required: false
+        description: Maximum number of results (default 5)
+    responses:
+      '200':
+        description: List of matching usernames
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                example: "boat123"
+      '400':
+        description: Invalid type parameter
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: "Invalid type"
