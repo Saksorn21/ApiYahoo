@@ -38,7 +38,7 @@ const routerAdmin = express.Router();
  *             schema:
  *               type: object
  *               properties:
- *                 users:
+ *                 data:
  *                   type: array
  *                   items:
  *                     type: object
@@ -124,7 +124,7 @@ routerAdmin.get("/users", authFromCookie, adminCheck, async (req, res) => {
   const total = result[0].totalCount[0]?.count || 0;
 
   res.json({
-    users: usersWithMemberships,
+    data: usersWithMemberships,
     total,
     page,
     pages: Math.ceil(total / limit),
