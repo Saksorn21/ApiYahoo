@@ -6,5 +6,5 @@ const tokenSchema = new mongoose.Schema({
   apiToken: { type: String, required: true, unique: true },  // opaque token
   expiresAt: { type: Date, required: true },      // หมดอายุเมื่อไหร่
 }, { timestamps: true });
-
+tokenSchema.index({ user: 1, expiresAt: 1, createdAt: -1 });
 export default mongoose.model("Token", tokenSchema);

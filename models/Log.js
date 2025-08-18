@@ -11,5 +11,5 @@ const logSchema = new mongoose.Schema({
   responseTime: { type: Number, required: true }, // ms
   timestamp: { type: Date, default: Date.now }
 });
-
+logSchema.index({ user: 1, action: 1, endpoint: 1, method: 1, ip: 1, timestamp: -1 })
 export default mongoose.model("Log", logSchema);
