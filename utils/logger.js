@@ -116,7 +116,7 @@ class Logger {
 
       // ส่ง log ไป socket.io ด้วย ถ้ามี
       if (this.io) {
-        console.log('Sending log to socket.io')
+                    console.log(chalk.hex('#ff8700').bold('[Socket.io] ')+'Sending log to socket.io')
         this.io.emit('server-log', {
           method,
           logLevel,
