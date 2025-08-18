@@ -17,8 +17,12 @@ servers:
     description: Dev Server API
   - url: https://api-portsanp.up.railway.app
     description: Server Railway API
+paths:
+  $ref: 'paths/admin.yaml'
 
 components:
+  schemas:
+    $ref: 'components/schemas.yaml#/components/schemas'
   securitySchemes:
     bearerAuth:
       type: http

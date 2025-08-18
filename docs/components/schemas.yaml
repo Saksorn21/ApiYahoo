@@ -1,0 +1,104 @@
+components:
+  schemas:
+    UserModel:
+      type: object
+      properties:
+        _id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    MembershipModel:
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          type: string
+          description: ObjectId by UserModel
+        membershipLevel:
+          type: string
+          enum: [free, pro, enterprise]
+        apiRequestCount:
+          type: integer
+        apiRequestReset:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    TokenModel:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+          description: username by UserModel
+        refreshToken:
+          type: string
+          description: created by JWT
+        apiToken:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+          description: apiToken expiration date
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    LogModel:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+          description: username by UserModel
+        action:
+          type: string
+        ip:
+          type: string
+        tokenId:
+          type: string
+          description: ObjectId by TokenModel
+        endpoint:
+          type: string
+        method:
+          type: string
+          enum: [GET, POST, PUT, DELETE]
+        statusCode:
+          type: integer
+        responseTime:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Internal server error"

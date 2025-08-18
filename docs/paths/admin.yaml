@@ -1,4 +1,4 @@
-/admin/info:
+info:
   get:
     summary: แสดงข้อมูลสรุปสำหรับ Dashboard Admin
     tags:
@@ -44,7 +44,7 @@
       '403':
         description: Forbidden
 
-/admin/info/refresh:
+info/refresh:
   get:
     summary: Refresh dashboard summary (ไม่ใช้ cache)
     tags: 
@@ -69,7 +69,7 @@
       '403':
         description: Forbidden
  
-/admin/users:
+users:
   get:
     summary: Get users with membership info
     tags: 
@@ -147,7 +147,7 @@
                 pages:
                   type: integer
 
-/admin/users/{id}:
+users/{id}:
   put:
     summary: แก้ไขข้อมูลผู้ใช้งาน
     tags: 
@@ -217,7 +217,7 @@
       '403':
         description: Forbidden
 
-/admin/memberships/{userId}:
+memberships/{userId}:
   put:
     summary: แก้ไขข้อมูล membership
     tags: [Admin]
@@ -263,7 +263,7 @@
       '403':
         description: Forbidden
 
-/admin/tokens:
+tokens:
   get:
     summary: Get all tokens with username
     tags: 
@@ -320,7 +320,7 @@
                 pages:
                   type: integer
 
-/admin/token/{id}:
+token/{id}:
   put:
     summary: Update expiration date apiToken by ID
     tags:
@@ -373,7 +373,7 @@
       '404':
         description: Token not found
  
-/admin/logs:
+logs:
   get:
     summary: Get all logs
     tags: 
@@ -438,12 +438,13 @@
 
   delete:
     summary: ลบ Logs ตามเงื่อนไขที่กำหนด
-    description: - ใช้สำหรับลบ logs ตามเดือนที่กำหนด ถึงเดือนปัจจุบัน
-            - สามารถเลือก method ที่ต้องการลบ (GET, POST, PUT, DELETE) หรือไม่ส่งมาจะเป็น All
-            - สามารถเลือก user ที่ต้องการลบ หรือไม่ส่งมาจะเป็น All
-            - ช่วงเวลาจะอิงตามเดือนที่ส่งมา (YYYY-MM) ถึงเดือนปัจจุบัน
+    description: |
+      - ใช้สำหรับลบ logs ตามเดือนที่กำหนด ถึงเดือนปัจจุบัน
+      - สามารถเลือก method ที่ต้องการลบ (GET, POST, PUT, DELETE) หรือไม่ส่งมาจะเป็น All
+      - สามารถเลือก user ที่ต้องการลบ หรือไม่ส่งมาจะเป็น All
+      - ช่วงเวลาจะอิงตามเดือนที่ส่งมา (YYYY-MM) ถึงเดือนปัจจุบัน
     tags:
-      - Admin Logs
+      - Admin
     parameters:
       - in: query
         name: month
@@ -514,13 +515,9 @@
       '500':
         description: Server error
         content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                error:
-                  type: string
-                  example: "Internal server error"
+           application/json:
+              schema:
+                $ref: '../components/schemas.yaml#/components/schemas/ErrorResponse'
 
 /admin/autocomplete:
   get:
@@ -567,3 +564,9 @@
                 error:
                   type: string
                   example: "Invalid type"
+      '500':
+        description: Server error
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/components/schemas/ErrorResponse'
