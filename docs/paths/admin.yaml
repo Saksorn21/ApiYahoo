@@ -453,74 +453,74 @@
           pattern: '^\d{4}-(0[1-9]|1[0-2])$'
           example: "2025-06"
         description: เดือนที่เริ่มลบ (รูปแบบ YYYY-MM)
-            - in: query
-              name: method
-              required: false
-              schema:
-                type: string
-                example: "GET,POST"
-              description: method ที่ต้องการลบ (เช่น GET, POST, PUT, DELETE) ถ้าไม่ส่งมาจะเป็น All
-            - in: query
-              name: user
-              required: false
-              schema:
-                type: string
-                example: "john_doe"
-              description: user ที่ต้องการลบ ถ้าไม่ส่งมาจะเป็น All
-          responses:
-            '200':
-              description: ผลการลบ logs สำเร็จ
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      month:
-                        type: string
-                        example: "2025-06"
-                      nowMonth:
-                        type: string
-                        example: "2025-08"
-                      maxMonth:
-                        type: string
-                        example: "2025-07"
-                      range:
-                        type: string
-                        example: "2025-06 to 2025-08"
-                      methods:
-                        type: array
-                        items:
-                          type: string
-                        example: ["GET", "POST"]
-                      users:
-                        type: string
-                        example: "All"
-                      count:
-                        type: integer
-                        example: 132
-                      message:
-                        type: string
-                        example: "Logs deleted successfully"
-            '400':
-              description: ข้อมูลที่ส่งมาไม่ถูกต้อง
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      error:
-                        type: string
-                        example: "Invalid month format (must be YYYY-MM)"
-            '500':
-              description: Server error
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      error:
-                        type: string
-                        example: "Internal server error"
+      - in: query
+        name: method
+        required: false
+        schema:
+          type: string
+          example: "GET,POST"
+        description: method ที่ต้องการลบ (เช่น GET, POST, PUT, DELETE) ถ้าไม่ส่งมาจะเป็น All
+      - in: query
+        name: user
+        required: false
+        schema:
+          type: string
+          example: "john_doe"
+        description: user ที่ต้องการลบ ถ้าไม่ส่งมาจะเป็น All
+    responses:
+      '200':
+        description: ผลการลบ logs สำเร็จ
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                month:
+                  type: string
+                  example: "2025-06"
+                nowMonth:
+                  type: string
+                  example: "2025-08"
+                maxMonth:
+                  type: string
+                  example: "2025-07"
+                range:
+                  type: string
+                  example: "2025-06 to 2025-08"
+                methods:
+                  type: array
+                  items:
+                    type: string
+                    example: ["GET", "POST"]
+                users:
+                  type: string
+                  example: "All"
+                count:
+                  type: integer
+                  example: 132
+                message:
+                  type: string
+                  example: "Logs deleted successfully"
+      '400':
+        description: ข้อมูลที่ส่งมาไม่ถูกต้อง
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: "Invalid month format (must be YYYY-MM)"
+      '500':
+        description: Server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: "Internal server error"
 
 /admin/autocomplete:
   get:
