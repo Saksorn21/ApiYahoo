@@ -29,7 +29,7 @@ const swaggerJs = swaggerUi
 const swaggerDocument = await loadSwagger();
 const io = await initSocket(server);
  
-const PORT = env.PORT || 5000
+const PORT = env.PORT || 3000
 mongoose.connect(process.env.MONGO_URI);
 
 app.use(express.json())
@@ -60,4 +60,4 @@ app.use((req, res) => {
 
   
 
-  server.listen(3000, () => console.log("🚀 Server running on " + PORT));
+  server.listen(PORT, "0.0.0.0", () => console.log("🚀 Server running on port: " + PORT));
