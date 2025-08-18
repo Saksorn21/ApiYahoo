@@ -17,7 +17,8 @@ class Logger {
   }
   setSocketIO(io) {
   this.io = io
-    console.log('connect socket.io', this.io.id)
+    console.log(chalk.rgb(37, 194, 160).bold('[Socket.io]') + ' connect Id: ' + this.io.id)
+    
   }
   formatStatusCode(){
     let code = this.statusCode
@@ -88,6 +89,15 @@ class Logger {
       this.isFinish = true
       }
     this.isFinish = true
+  }
+  senLogSocket(title, message){
+    if(this.io){
+      this.io.emit(`server-${title}`,{
+        message
+      })
+    }else{
+      console.log(chalk.hex('#ff8700').bold('[Socket.io]') + 'not connected')
+    }
   }
   log(method, logLevel, statusCode, endpoint, timeMs, ip, message = undefined){
     this.isFinish = false

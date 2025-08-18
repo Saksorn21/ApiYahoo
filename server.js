@@ -39,11 +39,12 @@ app.use(cookieParser());
 app.set("trust proxy", 1)
 logger.setSocketIO(io)
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-//app.use("/api-docs", swaggerLimiter, swaggerJs.serve, swaggerJs.setup(swaggerSpec))
+app.use("/api-docs", swaggerLimiter, swaggerJs.serve, swaggerJs.setup(swaggerSpec))
 app.use(generalLimiter)
+app.use(logConsole,logMiddleware)
 app.use("/admin", adminRouter)
 app.use("/auth", authRouter)
-app.use("/v1/api",authFromBearer, rateLimitMembership, logConsole, logMiddleware, apiRouter)
+app.use("/v1/api",authFromBearer, rateLimitMembership, apiRouter)
 app.post("/omise-webhook",webhook)
 app.get("/v1/swaggerJson", swaggerJson)
 app.use((err, req, res, next) => {

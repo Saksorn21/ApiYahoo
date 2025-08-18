@@ -1,5 +1,6 @@
 // socket.js
 import dotenv from 'dotenv'
+import chalk from 'chalk'
 dotenv.config()
 export const initSocket = async (server) => {
   const { Server } = await import('socket.io');
@@ -11,8 +12,9 @@ export const initSocket = async (server) => {
   });
 
   io.on('connection', (socket) => {
-    console.log('🔍Socket Client connected:', socket.id);
-    socket.emit('server-log', { msg: 'Welcome! Server log streaming started.' });
+    console.log(chalk.rgb(37, 194, 160).bold('[Socket.io]') + ' 🔍Socket Client connected:', socket.id)
+    
+    socket.emit('server-log', { message: 'Welcome! Server log streaming started.' });
   });
 
   return io;

@@ -15,7 +15,7 @@ const ip = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddr
       // เรียก debug แยกตอน dev mode เพื่อพิมพ์ body กับ query
       logger.debug('📝 Body:', req.body);
       logger.debug('🔍 Query:', req.query);
-console.log(ip)
+
       // ส่ง log หลัก
       logger.log(
         req.method,
