@@ -102,3 +102,49 @@ components:
         error:
           type: string
           example: "Internal server error"
+    BaseResponse:
+      description: Base response structure for all /auth
+      type: object
+      properties:
+        success:
+          type: boolean
+        statusCode:
+          type: integer
+        code:
+          type: string
+        message:
+          type: string
+    BaseResponseWithDataAdmin:
+      description: Base response structure for all method GET /admin
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+        total:
+          type: integer
+          example: 100
+        page:
+          type: integer
+          example: 1
+          description: Current page number sent query parameter (page)
+        pages:
+          type: integer
+          example: 10
+    BaseQueryWithGetData:
+      description: Base query structure for all method GET /admin
+      type: object
+      properties:
+        search:
+          type: string
+          example: "usertest"
+          description: The search will be different depending on the endpoint, if it is not sent it will be all data.
+        page:
+          type: integer
+          example: 1
+          description: Page number (default 1)
+        limit:
+          type: integer
+          example: 10
+          description: Data pre page (default 10)
