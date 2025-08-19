@@ -1,42 +1,43 @@
-login:
-  post:
-    summary: Login user and get token
-    tags: 
-      - Auth
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              identifier:
-                type: string
-                description: "Username or email of the user"
-                example: "usertest"
-              password:
-                type: string
-                description: User password
-            required:
-              - identifier
-              - password
-    responses:
-      '200':
-        description: Login successful
+paths:
+  login:
+    post:
+      summary: Login user and get token
+      tags: 
+        - Auth
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                statusCode:
-                  type: integer
-                code:
+                identifier:
                   type: string
-                message:
+                  description: "Username or email of the user"
+                  example: "usertest"
+                password:
                   type: string
-      '400':
-        description: Missing fields
-      '401':
-        description: Invalid credentials or password
+                  description: User password
+              required:
+                - identifier
+                - password
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  statusCode:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+        '400':
+          description: Missing fields
+        '401':
+          description: Invalid credentials or password

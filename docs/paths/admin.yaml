@@ -1,4 +1,5 @@
-  /admin/info:
+paths:
+  info:
     get:
       summary: แสดงข้อมูลสรุปสำหรับ Dashboard Admin
       tags:
@@ -43,8 +44,8 @@
           description: Unauthorized
         '403':
           description: Forbidden
-
-  /admin/info/refresh:
+  
+  info_refresh:
     get:
       summary: Refresh dashboard summary (ไม่ใช้ cache)
       tags: 
@@ -147,7 +148,7 @@
                   pages:
                     type: integer
   
-  /admin/users/{id}:
+  users_id:
     put:
       summary: แก้ไขข้อมูลผู้ใช้งาน
       tags: 
@@ -217,7 +218,7 @@
         '403':
           description: Forbidden
   
-  memberships/{userId}:
+  memberships_userId:
     put:
       summary: แก้ไขข้อมูล membership
       tags: [Admin]
@@ -263,7 +264,7 @@
         '403':
           description: Forbidden
   
-  /admin/tokens:
+  tokens:
     get:
       summary: Get all tokens with username
       tags: 
@@ -320,7 +321,7 @@
                   pages:
                     type: integer
   
-  /admin/token/{id}:
+  token_id:
     put:
       summary: Update expiration date apiToken by ID
       tags:
@@ -519,7 +520,7 @@
                 schema:
                   $ref: '../components/schemas.yaml#/components/schemas/ErrorResponse'
   
-  /admin/autocomplete:
+  autocomplete:
     get:
       summary: Autocomplete username for users, tokens, or logs
       tags:

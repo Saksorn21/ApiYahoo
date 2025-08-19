@@ -6,6 +6,28 @@ import TokenModel from
 "../models/Token.js"
 import logger from "../utils/logger.js"
 import redis from "../redisClient.js"
+import chalk from "chalk"
+export const startMode = (req, res, next) => {
+  if (process.env.NODE_ENV === "development"){
+    console.log(chalk.green.bold("⚙️🚀 Development Mode"))
+    const cookieHeader = req.headers["Cookie"];
+        if (cookieHeader) {
+          // สมมติ cookieHeader = "accessToken=xxx; something=yyy"
+          const cookies = Object.fromEntries(
+            cookieHeader.split(";").map(c => {
+              const [k, v] = c.trim().split("=");
+              return [k, v];
+            })
+          );
+         token = req.devToken = cookies.accessToken;
+          console.log( cookieHeader,req.devToken, token)
+          next();
+        }
+      } 
+  next();
+      }
+    
+
 const findUserByToken = async (token) => {
   const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET)
   const user = await User.findById(decoded.id).lean().select("-password")
@@ -65,84 +87,104 @@ export const authenticateToken = async (req, res, next) => {
     return res.status(403).json({ error: err });
   }
 };
+const checkToken = async (headers) => {
+  let token;
+
+  if (process.env.NODE_ENV === "development") {
+    // Dev: อ่าน token จาก header cookie (Swagger ส่งมา)
+    const cookieHeader = headers["x-access-token"];
+    
+    if (cookieHeader) {
+      
+      token = cookieHeader;
+    }
+  } else {
+    // Prod: ใช้ cookie-parser ปกติ
+    token = req.cookies?.accessToken;
+  }
+  return token
+}
 // ตรวจ login token จาก cookie
 export const authFromCookie = async (req, res, next) => {
-  const token = req.cookies.accessToken;
+  const token = await checkToken(req.headers)
+
+  
+    // Dev: อ่าน token จาก header cookie (Swagger ส่งมา)
+    
+
   if (!token) {
-    logger.debug("Check Coolkie token Error: ", token)
+    logger.debug("Check Cookie token Error: ", token)
     return res.status(401).json({ 
-    success: false,
-    statusCode: 401,
-    code: 'NO_TOKEN',
-    message: "No token provided" });
-    }
+      success: false,
+      statusCode: 401,
+      code: 'NO_TOKEN',
+      message: "No token provided"
+    });
+  }
 
   try {
-    const user = await findUserByToken(token)
+    const user = await findUserByToken(token);
     req.user = user;
-    req.token = token
+    req.token = token;
     next();
   } catch (err) {
-    logger.debug("Check Cookies Error: ", err)
+    logger.debug("Check Cookie Error: ", err)
     return res.status(403).json({ 
       success: false,
       statusCode: 403,
       code: 'INVALID_TOKEN',
-      message: "Invalid or expired token" });
+      message: "Invalid or expired token"
+    });
   }
 };
 
 // Middleware: checkLogin
 export const checkLogin = async (req, res, next) => {
-    const accessToken = req.cookies.accessToken || req.token
+  const accessToken = req.token || req.cookies?.accessToken;
 
-    if (!accessToken) {
-      logger.debug("checkLogin error", accessToken)
-        return res.status(401).json({
-            success: false,
-            statusCode: 401,
-            code: 'NO_TOKEN',
-            message: "No token provided"
-        });
+  if (!accessToken) {
+    logger.debug("checkLogin error", accessToken)
+    return res.status(401).json({
+      success: false,
+      statusCode: 401,
+      code: 'NO_TOKEN',
+      message: "No token provided"
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(accessToken, process.env.JWT_LOGIN_SECRET);
+    const userId = decoded.id;
+
+    const savedToken = await redis.get(`session:${userId}`);
+
+    if (savedToken !== accessToken) {
+      return res.status(403).json({ 
+        success: false,
+        statusCode: 403,
+        code: 'SESSION_EXPIRED',
+        message: "Session expired or logged in elsewhere"
+      });
     }
 
-    try {
-        const decoded = jwt.verify(accessToken, process.env.JWT_LOGIN_SECRET);
-        const userId = decoded.id;
+    // attach user (ไม่ต้อง findUserByToken ซ้ำถ้า authFromCookie attach แล้ว)
+    req.user = req.user || await findUserByToken(accessToken);
 
-        // ดึง accessToken ที่บันทึกไว้ใน Redis ด้วย userId
-        const savedToken = await redis.get(`session:${userId}`);
-
-        // ตรวจสอบว่า accessToken ที่ส่งมาตรงกับที่บันทึกไว้ใน Redis หรือไม่
-        if (savedToken !== accessToken) {
-            // ถ้าไม่ตรง แสดงว่า Session หมดอายุ หรือมีการล็อกอินจากเครื่องอื่น
-            return res.status(403).json({ 
-                success: false,
-                statusCode: 403,
-                code: 'SESSION_EXPIRED',
-                message: "Session expired or logged in elsewhere"
-            });
-        }
-
-        // ถ้าตรงกัน ให้หาข้อมูลผู้ใช้และส่งต่อไปยัง route
-        const user = await findUserByToken(accessToken);
-        req.user = user;
-        next();
-
-    } catch (err) {
-        // หาก accessToken ไม่ถูกต้องหรือหมดอายุ
-        return res.status(403).json({
-            success: false,
-            statusCode: 403,
-            code: 'INVALID_TOKEN',
-            message: "Invalid or expired token"
-        });
-    }
+    next();
+  } catch (err) {
+    return res.status(403).json({
+      success: false,
+      statusCode: 403,
+      code: 'INVALID_TOKEN',
+      message: "Invalid or expired token"
+    });
+  }
 };
-
 // Middleware: preventAccessIfLoggedIn
 export const preventAccessIfLoggedIn = async (req, res, next) => {
-    const accessToken = req.cookies.accessToken;
+  const token = await checkToken(req)
+    const accessToken = req.cookies.accessToken || token
+  
     // ถ้าไม่มี accessToken ให้ผ่านไปได้เลย
     if (!accessToken) {
         return next();

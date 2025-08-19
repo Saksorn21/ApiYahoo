@@ -50,12 +50,20 @@ export const authLogin = async (req, res) => {
       ? process.env.COOKIE_SERVICE // ใช้ได้ทั้ง api.example.com และ app.example.com
       : process.env.COOKIE_SERVICE_DEV // dev ใช้ localhost
   });
-
-
-  res.status(200).json({
+  if (!isProd) {
+    res.setHeader("x-access-token", accessToken);
+  }
+ isProd ? res.status(200).json({
     success: true,
     statusCode: 200,
     code: 'LOGIN_SUCCESS',
     message: "Login successful"
-  });
+  }) : res.status(200).json({
+     success: true,
+     statusCode: 200,
+     code: 'LOGIN_SUCCESS',
+     message: "Login successful",
+     accessToken
+   })
+  
 };

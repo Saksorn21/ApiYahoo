@@ -18,9 +18,27 @@ servers:
   - url: https://api-portsanp.up.railway.app/
     description: Server Railway API
 paths:
-  $ref: 'paths/admin.yaml'
+  /admin/info:
+    $ref: 'paths/admin.yaml#/paths/info'
+  /admin/info/refresh:
+    $ref: 'paths/admin.yaml#/paths/info_refresh'
+  /admin/users:
+    $ref: 'paths/admin.yaml#/paths/users'
+  /admin/users/{id}:
+    $ref: 'paths/admin.yaml#/paths/users_id'
+  /admin/memberships/{userId}:
+    $ref: 'paths/admin.yaml#/paths/memberships_userId'
+  /admin/tokens:
+    $ref: 'paths/admin.yaml#/paths/tokens'
+    /admin/tokens/{id}:
+      $ref: 'paths/admin.yaml#/paths/tokens_id'
+  /admin/logs:
+    $ref: 'paths/admin.yaml#/paths/logs'
+    /admin/autocomplete:
+      $ref: 'paths/admin.yaml#/paths/autocomplete'
   /auth/login:
-    $ref: 'paths/auth.yaml#/login'
+    $ref: './paths/auth.yaml#/paths/login'
+  #$ref: 'paths/admin.yaml#/paths'
 
 components:
   schemas:
@@ -30,4 +48,10 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    cookieAuth:
+      type: apiKey
+      in: header
+      name: x-access-token
+security:
+- cookieAuth: []
 

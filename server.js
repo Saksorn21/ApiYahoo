@@ -13,7 +13,7 @@ import swaggerUi from "swagger-ui-express";
 import { corsOptionsDelegate } from "./cors.js"
 import cookieParser from "cookie-parser";
 
-import { logMiddleware, authFromBearer } from './auth/middleware.js'
+import { logMiddleware, authFromBearer, startMode } from './auth/middleware.js'
 import { logConsole } from './auth/loggerMiddleware.js'
 import logger from './utils/logger.js'
 import { initSocket } from './socket.js';
@@ -41,6 +41,7 @@ logger.setSocketIO(io)
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 //app.use("/api-docs", swaggerLimiter, swaggerJs.serve, swaggerJs.setup(swaggerSpec))
 app.use(generalLimiter)
+app.use(startMode)
 app.use(logConsole)
 app.use("/admin", adminRouter)
 app.use("/auth", authRouter)
