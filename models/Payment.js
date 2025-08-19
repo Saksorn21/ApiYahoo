@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 
 const paymantSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-
   // Order
   orderId: { type: String, required: true, index: true },
   amount: { type: Number, required: true },
+  displayAmount: { type: Number, required: true },
   currency: { type: String, default: "THB" },
 
   // Omise Transaction
@@ -35,10 +35,9 @@ const paymantSchema = new mongoose.Schema({
 
   // Refund
   refundId: { type: String },
-
+  refundedAmount: { type: Number, default: 0 }, // หน่วยสตางค์
+  refundedAt: { type: Date },
   // Timestamps
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true })
 paymantSchema.index({ userId: 1, createdAt: -1 });
 export default mongoose.model("Paymant", paymantSchema);

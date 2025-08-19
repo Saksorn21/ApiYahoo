@@ -1,12 +1,20 @@
 import Membership from "../models/Membership.js"
 import { User } from "../models/User.js"
-export const webhook = (req, res) => {
+export const webhook = async (req, res) => {
   const event = req.body;
 
   // ตรวจสอบชนิดของ Event ที่ได้รับ
   switch (event.key) {
     case 'charge.complete':
       const charge = event.data;
+      await Payment.findOneAndUpdate(
+        { chargeId: charge.id },
+        {
+          status: charge.paid ? "paid" : "failed",
+          failureReason: charge.failure_code || null,
+          updatedAt: new Date()
+        }
+      )
       if (charge.status === 'successful') {
         // เมื่อการชำระเงินสำเร็จจากช่องทางอื่นๆ (เช่น PromptPay, Internet Banking)
         // คุณสามารถอัปเดตสถานะการสั่งซื้อในฐานข้อมูลได้ที่นี่
