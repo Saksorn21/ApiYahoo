@@ -182,7 +182,7 @@ export const checkLogin = async (req, res, next) => {
 };
 // Middleware: preventAccessIfLoggedIn
 export const preventAccessIfLoggedIn = async (req, res, next) => {
-  const token = await checkToken(req)
+  const token = await checkToken(req.headers)
     const accessToken = req.cookies.accessToken || token
   
     // ถ้าไม่มี accessToken ให้ผ่านไปได้เลย
