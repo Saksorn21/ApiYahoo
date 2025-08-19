@@ -19,6 +19,8 @@ servers:
     description: Server Railway API
 paths:
   $ref: 'paths/admin.yaml'
+  /auth/login:
+    $ref: 'paths/auth.yaml#/login'
 
 components:
   schemas:

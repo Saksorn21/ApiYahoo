@@ -45,14 +45,14 @@ const swaggerOptions = {
   apis: ["./routers/*.js", "./auth/*.js", "./auth/admin/*.js"], // ตรงนี้ชี้ไฟล์ route ที่มีคอมเมนต์
 };
 export const loadSwagger = async () => {
-  const api = await SwaggerParser.bundle("./docs/openapi.yaml", (err, api) => {
-    if (err) {
-      console.error(err)
-      return
-    }
-    console.log(`API name: ${api.info.title}, Version: ${api.info.version}`)
-  });
-  
+  const api = await SwaggerParser.bundle("./docs/openapi.yaml");
+  // (err, api) => {
+  //   if (err) {
+  //     console.error(err)
+  //     return
+  //   }
+  //   console.log(`API name: ${api.info.title}, Version: ${api.info.version}`)
+  // }
   return api;
 };
 
