@@ -15,61 +15,8 @@ import { payment } from "../auth/payment.js";
 
 const router = express.Router();
 export const authRouter = express.Router();
-/**
- * @swagger
- * /auth/login:
- *   post:
- *     summary: Login user and get token
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               identifier:
- *                 type: string
- *                 description: "Username or email of the user"
- *                 example: "usertest"
- *               password:
- *                 type: string
- *                 description: User password
- *             required:
- *               - identifier
- *               - password
- *     responses:
- *       '200':
- *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 statusCode:
- *                   type: integer
- *                 code:
- *                   type: string
- *                 message:
- *                   type: string
- *       '400':
- *         description: Missing fields
- *       '401':
- *         description: Invalid credentials or password
- */
+
 authRouter.post("/login", preventAccessIfLoggedIn, authLogin);
-/**
- * @swagger
- * /auth/logout:
- *   post:
- *     summary: Logout user
- *     tags: [Auth]
- *     responses:
- *       200:
- *         description: Logout user
- */
 
 authRouter.post("/logout", authFromCookie, checkLogin, authLogout);
 /**
