@@ -38,6 +38,8 @@ paths:
       $ref: 'paths/admin.yaml#/paths/autocomplete'
   /auth/login:
     $ref: './paths/auth.yaml#/paths/login'
+  /auth/logout:
+    $ref: './paths/auth.yaml#/paths/logout'
   #$ref: 'paths/admin.yaml#/paths'
 
 components:
