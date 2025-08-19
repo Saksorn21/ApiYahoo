@@ -41,7 +41,7 @@ logger.setSocketIO(io)
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 //app.use("/api-docs", swaggerLimiter, swaggerJs.serve, swaggerJs.setup(swaggerSpec))
 app.use(generalLimiter)
-app.use(startMode)
+
 app.use(logConsole)
 app.use("/admin", adminRouter)
 app.use("/auth", authRouter)
