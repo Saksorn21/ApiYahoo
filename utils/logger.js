@@ -39,7 +39,7 @@ class Logger {
      this.finishMessage += wh('[') + format + wh(']')
   }
   formatLog(){
-    const ml = this.logger.toUpperCase()
+    const ml = this.logger.toUpperCase() || 'LOG'
     const wh = chalk.white.bold
     const gr = chalk.bgGreen.bold
     const re = chalk.bgRed.bold
