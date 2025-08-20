@@ -113,7 +113,7 @@ export const authFromCookie = async (req, res, next) => {
     
 
   if (!token) {
-    logger.debug("Check Cookie token Error: ", token)
+    logger.log("Check Cookie token Error: ", token)
     return res.status(401).json({ 
       success: false,
       statusCode: 401,
@@ -128,7 +128,7 @@ export const authFromCookie = async (req, res, next) => {
     req.token = token;
     next();
   } catch (err) {
-    logger.debug("Check Cookie Error: ", err)
+    logger.log("Check Cookie Error: ", err)
     return res.status(403).json({ 
       success: false,
       statusCode: 403,
@@ -143,7 +143,7 @@ export const checkLogin = async (req, res, next) => {
   const accessToken = req.token || req.cookies?.accessToken;
 
   if (!accessToken) {
-    logger.debug("checkLogin error", accessToken)
+    logger.log("checkLogin error")
     return res.status(401).json({
       success: false,
       statusCode: 401,
