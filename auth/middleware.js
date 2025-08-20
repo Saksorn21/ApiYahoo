@@ -87,12 +87,12 @@ export const authenticateToken = async (req, res, next) => {
     return res.status(403).json({ error: err });
   }
 };
-const checkToken = async (headers) => {
+const checkToken = async (req) => {
   let token;
 
   if (process.env.NODE_ENV === "development") {
     // Dev: อ่าน token จาก header cookie (Swagger ส่งมา)
-    const cookieHeader = headers["x-access-token"];
+    const cookieHeader = req.headers["x-access-token"];
     
     if (cookieHeader) {
       
@@ -106,7 +106,7 @@ const checkToken = async (headers) => {
 }
 // ตรวจ login token จาก cookie
 export const authFromCookie = async (req, res, next) => {
-  const token = await checkToken(req.headers)
+  const token = await checkToken(req)
 
   
     // Dev: อ่าน token จาก header cookie (Swagger ส่งมา)
@@ -182,7 +182,7 @@ export const checkLogin = async (req, res, next) => {
 };
 // Middleware: preventAccessIfLoggedIn
 export const preventAccessIfLoggedIn = async (req, res, next) => {
-  const token = await checkToken(req.headers)
+  const token = await checkToken(req)
     const accessToken = req.cookies.accessToken || token
   
     // ถ้าไม่มี accessToken ให้ผ่านไปได้เลย
