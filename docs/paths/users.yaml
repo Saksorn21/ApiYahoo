@@ -1,77 +1,117 @@
-/admin/users:
-  get:
-    summary: Get users with membership info
-    tags: 
-      - Admin
-    parameters:
-      - in: query
-        name: search
-        schema:
-          type: string
+paths:
+  payments_history:
+    get:
+      tags:
+        - User - Payment
+      summary: Get payment history for logged-in user
+      responses:
+        '200':
+          description: List of user payments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  payments:
+                    type: array
+                    items:
+                      $ref: '../components/schemas.yaml#/components/schemas/Payment'
+        '401':
+          description: Unauthorized
+
+  payments_id_refund-request:
+    post:
+      tags:
+        - User - Payment
+      summary: Request a refund for a paid payment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Payment ID to request refund
+      requestBody:
         required: false
-        description: Search by username prefix
-      - in: query
-        name: page
-        schema:
-          type: integer
-          default: 1
-        description: Page number
-      - in: query
-        name: limit
-        schema:
-          type: integer
-          default: 10
-        description: Items per page
-    responses:
-      '200':
-        description: List of users with membership
         content:
           application/json:
             schema:
               type: object
               properties:
-                data:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      _id:
-                        type: string
-                      username:
-                        type: string
-                      email:
-                        type: string
-                      role:
-                        type: string
-                        enum: [user, admin]
-                      createdAt:
-                        type: string
-                        format: date-time
-                      updatedAt:
-                        type: string
-                        format: date-time
-                      membership:
-                        type: object
-                        properties:
-                          _id:
-                            type: string
-                          membershipLevel:
-                            type: string
-                            enum: [free, pro, enterprise]
-                          apiRequestCount:
-                            type: number
-                          apiRequestReset:
-                            type: string
-                            format: date-time
-                          createdAt:
-                            type: string
-                            format: date-time
-                          updatedAt:
-                            type: string
-                            format: date-time
-                total:
-                  type: integer
-                page:
-                  type: integer
-                pages:
-                  type: integer
+                reason:
+                  type: string
+                  description: Reason for refund request
+      responses:
+        '200':
+          description: Refund request submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  message:
+                    type: string
+                  payment:
+                    $ref: '../components/schemas.yaml#/components/schemas/Payment'
+        '400':
+          description: Bad request (e.g., payment not paid)
+        '404':
+          description: Payment not found
+        '401':
+          description: Unauthorized
+
+  payments:
+    post:
+      tags:
+        - User - Payment
+      summary: Create a new payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - amount
+                - token
+                - orderId
+              properties:
+                userId:
+                  type: string
+                amount:
+                  type: number
+                  description: Amount in THB
+                token:
+                  type: string
+                  description: Omise card token from frontend
+                orderId:
+                  type: string
+                membershipId:
+                  type: string
+                membershipLevel:
+                  type: string
+      responses:
+        '200':
+          description: Payment successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  message:
+                    type: string
+                  chargeId:
+                    type: string
+                  status:
+                    type: string
+        '400':
+          description: Payment failed / missing parameters
+        '500':
+          description: Internal server error

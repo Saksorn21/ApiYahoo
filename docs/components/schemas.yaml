@@ -148,3 +148,69 @@ components:
           type: integer
           example: 10
           description: Data pre page (default 10)
+    Payment:
+    type: object
+    properties:
+      _id:
+        type: string
+      userId:
+        type: string
+      orderId:
+        type: string
+      amount:
+        type: number
+      displayAmount:
+        type: number
+      fee:
+        type: number
+      net:
+        type: number
+      currency:
+        type: string
+      paid_at:
+        type: string
+        format: date-time
+      chargeId:
+        type: string
+      cardId:
+        type: string
+      status:
+        type: string
+        enum: [pending, paid, refund_requested, refunded, refund_rejected, failed]
+      omiseStatus:
+        type: string
+      failureReason:
+        type: string
+      cardLast4:
+        type: string
+      cardBrand:
+        type: string
+      cardExpMonth:
+        type: number
+      cardExpYear:
+        type: number
+      cardFingerprint:
+        type: string
+      refunds:
+        type: array
+        items:
+          type: object
+          properties:
+            refundId:
+              type: string
+            amount:
+              type: number
+            refundedAt:
+              type: string
+              format: date-time
+      refundRequestedAt:
+        type: string
+        format: date-time
+      refundReason:
+        type: string
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time

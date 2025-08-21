@@ -7,6 +7,10 @@ info:
 tags:
   - name: Admin
     description: Admin-only endpoints
+  - name: Admin - Payment
+    description: Admin-only endpoints for payment management
+  - name: User - Payment
+    description: User endpoints for payment management
   - name: API
     description: Public API for clients
   - name: Auth
@@ -34,8 +38,26 @@ paths:
       $ref: 'paths/admin.yaml#/paths/tokens_id'
   /admin/logs:
     $ref: 'paths/admin.yaml#/paths/logs'
-    /admin/autocomplete:
-      $ref: 'paths/admin.yaml#/paths/autocomplete'
+  /admin/autocomplete:
+    $ref: 'paths/admin.yaml#/paths/autocomplete'
+  /admin/payments:
+    $ref: 'paths/admin.yaml#/paths/payments'
+  /admin/refunds:
+    $ref: 'paths/admin.yaml#/paths/refunds'
+  /admin/payments/{id}:
+    $ref: 'paths/admin.yaml#/paths/payments_id'
+  /admin/statistics:
+    $ref: 'paths/admin.yaml#/paths/statistics'
+  /admin/refund/{id}/approve:
+    $ref: 'paths/admin.yaml#/paths/refund_id_approve'
+  /admin/refund/{id}/reject:
+    $ref: 'paths/admin.yaml#/paths/refund_id_reject'
+  /auth/payments/history:
+    $ref: 'paths/users.yaml#/paths/payments_history'
+  /auth/payments/{id}/refund-request:
+    $ref: 'paths/users.yaml#/paths/payments_id_refund-request'
+  /auth/payments:
+    $ref: 'paths/users.yaml#/paths/payments'
   /auth/login:
     $ref: './paths/auth.yaml#/paths/login'
   /auth/logout:

@@ -571,3 +571,207 @@ paths:
             application/json:
               schema:
                 $ref: '../components/schemas.yaml#/components/schemas/ErrorResponse'
+  payments:
+    get:
+      tags:
+        - Admin - Payment
+      summary: List all payments (DB source, optional sync with Omise)
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, paid, refund_requested, refunded, refund_rejected, failed]
+          description: Filter by payment status
+        - in: query
+          name: userId
+          schema:
+            type: string
+          description: Filter by user ID
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+        - in: query
+          name: sync
+          schema:
+            type: boolean
+            default: false
+          description: Optionally sync with Omise API
+      responses:
+        '200':
+          description: List of payments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  payments:
+                    type: array
+                    items:
+                      $ref: '../components/schemas.yaml#/components/schemas/Payment'
+  refunds:
+    get:
+      tags:
+        - Admin - Payment
+      summary: List all refunds (DB source, optional sync with Omise)
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [refund_requested, refunded, refund_rejected]
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+        - in: query
+          name: sync
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: List of refunds
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  payments:
+                    type: array
+                    items:
+                      $ref: '../components/schemas.yaml#/components/schemas/Payment'
+
+  payments_id:
+    get:
+      tags:
+        - Admin - Payment
+      summary: Get payment detail with refunds
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Payment ID
+      responses:
+        '200':
+          description: Payment detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  payment:
+                    $ref: '../components/schemas.yaml#/components/schemas/Payment'
+        '404':
+          description: Payment not found
+
+  statistics:
+    get:
+      tags:
+        - Admin - Payment
+      summary: Get payment statistics (totalAmount, totalFee, totalNet, totalRefunded)
+      responses:
+        '200':
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  statistics:
+                    type: object
+                    properties:
+                      totalAmount:
+                        type: number
+                      totalFee:
+                        type: number
+                      totalNet:
+                        type: number
+                      totalRefunded:
+                        type: number
+
+  refund_id_approve:
+    post:
+      tags:
+        - Admin - Payment
+      summary: Approve a refund and execute Omise refund
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Payment ID to refund
+      responses:
+        '200':
+          description: Refund approved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  message:
+                    type: string
+                  payment:
+                    $ref: '../components/schemas.yaml#/components/schemas/Payment'
+
+  refund_id_reject:
+    post:
+      tags:
+        - Admin - Payment
+      summary: Reject a refund request
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Payment ID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Refund rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  message:
+                    type: string
+                  payment:
+                    $ref: '../components/schemas.yaml#/components/schemas/Payment'
