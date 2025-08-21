@@ -115,3 +115,75 @@ paths:
           description: Payment failed / missing parameters
         '500':
           description: Internal server error
+
+  me:
+    get:
+      summary: Get user information with membership
+      tags: 
+        - User
+      responses:
+        200:
+          description: Get user information successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  statusCode:
+                    type: integer
+                    example: 200
+                  code:
+                    type: string
+                    example: GET_ME_SUCCESS
+                  message:
+                    type: string
+                    example: Get me successful
+                  data:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: 64e82f1e6a8f123456789abc
+                      username:
+                        type: string
+                        example: boat123
+                      email:
+                        type: string
+                        example: boat@example.com
+                      role:
+                        type: string
+                        enum: [user, admin]
+                        default: user
+                      membership:
+                        type: object
+                        nullable: true
+                        properties:
+                          membershipLevel:
+                            type: string
+                            enum: [free, pro, enterprise]
+                            example: pro
+                          status:
+                            type: string
+                            enum: [active, inactive, expired]
+                            example: active
+                          apiRequestCount:
+                            type: integer
+                            example: 10
+                          apiRequestReset:
+                            type: string
+                            format: date-time
+                            example: 2025-08-21T00:00:00.000Z
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Get user information failed
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas.yaml#/components/schemas/BaseResponse'
+  

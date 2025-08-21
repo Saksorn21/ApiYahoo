@@ -19,29 +19,7 @@ export const authRouter = express.Router();
 authRouter.post("/login", preventAccessIfLoggedIn, authLogin);
 
 authRouter.post("/logout", authFromCookie, checkLogin, authLogout);
-/**
- * @swagger
- * /auth/register:
- *   post:
- *     summary: Register username and password
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: User created
- */
+
 authRouter.post("/register", preventAccessIfLoggedIn, authRegister);
 /**
  * @swagger
@@ -56,63 +34,7 @@ authRouter.post("/register", preventAccessIfLoggedIn, authRegister);
 authRouter.get("/dashboard", authFromCookie, checkLogin, (req, res) => {
   res.json({ msg: `Hello ${req.user.username}` });
 });
-/**
- * @swagger
- * /auth/me:
- *   get:
- *     summary: Get user information
- *     tags: [Auth]
- *     responses:
- *       200:
- *         description: Get user information
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 statusCode:
- *                   type: integer
- *                 code:
- *                   type: string
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     _id:
- *                       type: string
- *                     username:
- *                       type: string
- *                     email:
- *                       type: string
- *                     role:
- *                       type: string
- *                       enum: [user, admin]
- *                       default: user
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden
- *       500:
- *         description: Get user information
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 statusCode:
- *                   type: integer
- *                 code:
- *                   type: string
- *                 message:
- *                   type: string
- *                 data:
- *                   type: null
- */
+
 authRouter.get("/me", authFromCookie, checkLogin, getMe)
 /**
  * @swagger

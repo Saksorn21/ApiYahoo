@@ -9,6 +9,8 @@ tags:
     description: Admin-only endpoints
   - name: Admin - Payment
     description: Admin-only endpoints for payment management
+  - name: User
+    description: User endpoints for management
   - name: User - Payment
     description: User endpoints for payment management
   - name: API
@@ -58,11 +60,14 @@ paths:
     $ref: 'paths/users.yaml#/paths/payments_id_refund-request'
   /auth/payments:
     $ref: 'paths/users.yaml#/paths/payments'
+  /auth/register:
+    $ref: './paths/auth.yaml#/paths/register'
   /auth/login:
     $ref: './paths/auth.yaml#/paths/login'
   /auth/logout:
     $ref: './paths/auth.yaml#/paths/logout'
-  #$ref: 'paths/admin.yaml#/paths'
+  /auth/me:
+    $ref: './paths/users.yaml#/paths/me'
 
 components:
   schemas:

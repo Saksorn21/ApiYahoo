@@ -48,3 +48,24 @@ paths:
       responses:
         200:
           description: Logout user
+  register:
+    post:
+      summary: Register email and username and password
+      tags: 
+       - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        200:
+          description: User created
