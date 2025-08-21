@@ -40,10 +40,33 @@ export const webhook = async (req, res) => {
         { status: "failed", failureReason: "expired" },
       );
       break;
-    case "refund.complete":
-      // จัดการเมื่อมีการคืนเงินสำเร็จ
-      const refund = event.data;
-      console.log(`Webhook: Refund ${refund.id} is complete.`);
+      case "refund.complete":
+      try {
+        const refund = event.data;
+        console.log(`Webhook: Refund ${refund.id} is complete.`);
+
+        // หา payment ที่ตรงกับ chargeId ของ refund
+        const payment = await Payment.findOne({ chargeId: refund.charge });
+        if (!payment) {
+          console.warn(`Payment not found for chargeId ${refund.charge}`);
+          break;
+        }
+
+        // เพิ่ม refund ลงใน array
+        payment.refunds.push({
+          refundId: refund.id,
+          amount: refund.amount,
+          refundedAt: refund.created_at
+        });
+
+        // อัปเดตสถานะ
+        payment.status = "refunded";
+        await payment.save();
+
+        console.log(`Payment ${payment._id} updated with refund ${refund.id}`);
+      } catch (err) {
+        console.error("Error processing refund.complete webhook:", err);
+      }
       break;
 
     // เพิ่ม case อื่นๆ ที่คุณต้องการจัดการ
