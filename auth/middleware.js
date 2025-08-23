@@ -113,7 +113,7 @@ export const authFromCookie = async (req, res, next) => {
     
 
   if (!token) {
-    logger.log("Check Cookie token Error: ", token)
+    logger.console('ERROR','No token provided')
     return res.status(401).json({ 
       success: false,
       statusCode: 401,
@@ -143,7 +143,7 @@ export const checkLogin = async (req, res, next) => {
   const accessToken = req.token || req.cookies?.accessToken;
 
   if (!accessToken) {
-    logger.log("checkLogin error")
+    logger.console('error',"checkLogin error")
     return res.status(401).json({
       success: false,
       statusCode: 401,
@@ -249,6 +249,7 @@ export const authFromBearer = async (req, res, next) => {
     try {
       decoded = jwt.verify(tokenDoc.refreshToken, process.env.JWT_SECRET);
     } catch (err){
+      
       logger.debug("authFromBearer JWT Error:", err)
       return res.status(403).json({ error: "Invalid token signature" });
 }

@@ -99,6 +99,15 @@ class Logger {
       console.log(chalk.hex('#ff8700').bold('[Socket.io]') + 'not connected')
     }
   }
+  console(logLevel,message){
+    this.logger = logLevel
+    this.message = message
+    this.formatLog()
+    this.formatmessage()
+    this.isFinish = false
+    const result = this.finishMessage
+    console[result ? 'info' : 'log'](result)
+  }
   log(method, logLevel, statusCode, endpoint, timeMs, ip, message = undefined){
     this.isFinish = false
     this.statusCode = statusCode
