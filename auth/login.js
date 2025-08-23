@@ -41,29 +41,31 @@ export const authLogin = async (req, res) => {
   // ใน login controller
   const isProd = process.env.NODE_ENV === "production";
 
-  res.cookie("accessToken", accessToken, {
+  const cookieOptions = {
     httpOnly: true,
-    secure: isProd, // ใช้ secure เฉพาะ prod
-    sameSite: isProd ? "strict" : "lax", // dev ใช้ lax จะง่ายกว่าเวลา cross-site
-    maxAge: 60 * 60 * 1000,
+    secure: isProd,
+    sameSite: isProd ? "strict" : "lax",
+    maxAge: 60 * 60 * 1000, // 1 hour
     domain: isProd
-      ? process.env.COOKIE_SERVICE // ใช้ได้ทั้ง api.example.com และ app.example.com
-      : process.env.COOKIE_SERVICE_DEV // dev ใช้ localhost
-  });
-  if (!isProd) {
+      ? process.env.COOKIE_SERVICE
+      : undefined, // dev ไม่เซ็ต domain → browser จะไม่พยายาม match
+  };
+
+  if (isProd) {
+    res.cookie("accessToken", accessToken, cookieOptions);
+  } else {
+    // Dev → ส่ง token ให้ Swagger / dev frontend
     res.setHeader("x-access-token", accessToken);
   }
- isProd ? res.status(200).json({
+
+  res.status(200).json({
     success: true,
     statusCode: 200,
     code: 'LOGIN_SUCCESS',
-    message: "Login successful"
-  }) : res.status(200).json({
-     success: true,
-     statusCode: 200,
-     code: 'LOGIN_SUCCESS',
-     message: "Login successful",
-     accessToken
-   })
+    message: "Login successful",
+    ...(isProd ? {} : { accessToken }) // dev ส่ง token กลับด้วย
+  });
+  };
+
   
 };
