@@ -39,10 +39,10 @@ const generateSnippet = (req, res) => {
 
     const snippetObj = {};
     result.snippets.forEach((s) => {
-      snippetObj[s.title] = s.content;
+      // ใช้ s.id (เช่น javascript_axios) แทน s.title ("Javascript + Axios")
+      snippetObj[s.id] = s.content;
     });
 
-    // ส่งกลับให้ client
     res.json({ success: true, snippets: snippetObj });
   } catch (err) {
     console.error(err);
