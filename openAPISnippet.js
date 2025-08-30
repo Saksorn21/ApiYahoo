@@ -30,7 +30,6 @@ const generateSnippet = (req, res) => {
       "python_python3",
       "python_requests",
       "ruby_native",
-      "ruby_faraday",
       "shell_curl",
       "shell_httpie",
       "shell_wget",
