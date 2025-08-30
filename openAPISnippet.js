@@ -9,31 +9,33 @@ const generateSnippet = (req, res) => {
 
     // กำหนด target client / language ให้หลากหลาย
     const targets = [
-      "shell_curl",
-      "shell_httpie",
-      "shell_wget",
-      "node_request",
-      "node_native",
-      "node_unirest",
-      "python_requests",
-      "python_python3",
-      "javascript_xhr",
-      "javascript_jquery",
-      "java_unirest",
-      "java_okhttp",
+      "c_libcurl",
       "csharp_restsharp",
       "csharp_httpclient",
       "go_native",
+      "java_okhttp",
+      "java_unirest",
+      "javascript_axios",
+      "javascript_fetch",
+      "javascript_jquery",
+      "javascript_xhr",
+      "node_fetch",
+      "node_request",
+      "node_unirest",
+      "objc_nsurlsession",
+      "ocaml_cohttp",
       "php_curl",
       "php_http1",
       "php_http2",
-      "objc_nsurlsession",
-      "swift_nsurlsession",
+      "python_python3",
+      "python_requests",
+      "python_httpx",
       "ruby_native",
-      "c_libcurl",
-      "ocaml_cohttp"
+      "shell_curl",
+      "shell_httpie",
+      "shell_wget",
+      "swift_nsurlsession"
     ];
-
     const result = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets);
 
     const snippetObj = {};
