@@ -46,3 +46,12 @@ task = "shell.exec"
 args = "npm run dev"
 
 [agent]
+
+[rules]
+
+[rules.formatter]
+
+[rules.formatter.fileExtensions]
+
+[rules.formatter.fileExtensions.".js"]
+id = "module:nodejs-22/languageServer:typescript-language-server"
