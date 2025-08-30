@@ -30,6 +30,7 @@
     "node-cache": "^5.1.2",
     "omise": "^1.0.0",
     "openapi-format": "^1.27.3",
+    "openapi-snippet": "^0.14.0",
     "rate-limiter-flexible": "^7.2.0",
     "socket.io": "^4.8.1",
     "swagger-jsdoc": "^6.2.8",

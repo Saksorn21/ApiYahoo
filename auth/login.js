@@ -66,6 +66,3 @@ export const authLogin = async (req, res) => {
     ...(isProd ? {} : { accessToken }) // dev ส่ง token กลับด้วย
   });
   };
-
-  
-};

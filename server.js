@@ -9,7 +9,7 @@ import { generalLimiter, rateLimitMembership } from "./auth/rateLimit.js";
 import adminRouter from './routers/admin.js'
 import apiRouter from './routers/apiRouter.js'
 import swaggerUi from "swagger-ui-express";
-
+import generateSnippet from "./openAPISnippet.js"
 import { corsOptionsDelegate } from "./cors.js"
 import cookieParser from "cookie-parser";
 
@@ -39,7 +39,7 @@ app.use(cookieParser());
 app.set("trust proxy", 1)
 logger.setSocketIO(io)
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-//app.use("/api-docs", swaggerLimiter, swaggerJs.serve, swaggerJs.setup(swaggerSpec))
+app.post("/generate-snippet", generateSnippet)
 app.use(generalLimiter)
 
 app.use(logConsole)
