@@ -57,7 +57,10 @@ export const loadSwagger = async () => {
 };
 
 export const swaggerSpec = swaggerJSDoc(swaggerOptions);
-
+export const swaggerFullJson = async (req, res) => {
+  const api = await loadSwagger()
+  res.json(api)
+}
 export const swaggerJson = (req, res) => {
     const allowedTags = ["API"];
 

@@ -4,7 +4,7 @@ import cors from "cors"
 import http from 'http';
 import mongoose from "mongoose"
 import { authRouter } from "./routers/index.js"
-import { swaggerJson, swaggerSpec, swaggerLimiter, loadSwagger } from "./swagger.js"
+import { swaggerJson, swaggerFullJson, swaggerLimiter, loadSwagger } from "./swagger.js"
 import { generalLimiter, rateLimitMembership } from "./auth/rateLimit.js";
 import adminRouter from './routers/admin.js'
 import apiRouter from './routers/apiRouter.js'
@@ -47,7 +47,8 @@ app.use("/admin", adminRouter)
 app.use("/auth", authRouter)
 app.use("/v1/api",authFromBearer, rateLimitMembership, logMiddleware, apiRouter)
 app.post("/omise-webhook",webhook)
-app.get("/v1/swaggerJson", swaggerJson)
+app.get("/v1/swaggerApi.json", swaggerJson)
+app.get("/v1/swagger.json", swaggerFullJson)
 app.use((err, req, res, next) => {
   console.error("🔥 Server error:", err.stack);
   res.status(500).json({ message: "Internal Server Error" });
