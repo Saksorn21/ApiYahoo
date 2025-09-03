@@ -68,6 +68,16 @@ paths:
     $ref: './paths/auth.yaml#/paths/logout'
   /auth/me:
     $ref: './paths/users.yaml#/paths/me'
+  /api/chart:
+    $ref: './paths/api.yaml#/paths/chart'
+  /api/quotes/{symbol}:
+    $ref: './paths/api.yaml#/paths/quotes_symbol'
+  /api/news:
+    $ref: './paths/api.yaml#/paths/news'
+  /api/search:
+    $ref: './paths/api.yaml#/paths/search'
+  /api/search/autocomplete:
+    $ref: './paths/api.yaml#/paths/search_autocomplete'
 
 components:
   schemas:

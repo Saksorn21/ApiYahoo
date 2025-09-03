@@ -1,0 +1,255 @@
+paths:
+  chart:
+    get:
+      summary: Get stock chart data by symbol
+      security:
+        - bearerAuth: []
+      tags:
+        - API
+      parameters:
+        - in: query
+          name: symbol
+          required: true
+          schema:
+            type: string
+          description: Stock symbol (e.g. NVDA)
+          example: NVDA
+        - in: query
+          name: range
+          required: false
+          schema:
+            type: string
+            default: 1y
+          description: Range of data (e.g. 1d, 5d, 1mo, 1y)
+        - in: query
+          name: interval
+          required: false
+          schema:
+            type: string
+            default: 1d
+          description: Interval between data points (e.g. 1m, 5m, 1d)
+        - in: query
+          name: events
+          required: false
+          schema:
+            type: string
+            default: div, splits, capitalGains
+          description: Event types to include (comma separated)
+      responses:
+        200:
+          description: Stock chart data successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  chart:
+                    result: [...]
+                    error: null
+        400:
+          description: Missing required symbol parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: No symbol
+        500:
+          description: Server error when fetching data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Server Data Error
+
+  quotes_symbol:
+    get:
+      summary: ดึงข้อมูลสรุปราคาหุ้นรายวันและราคาก่อน-หลังตลาด (pre/post market) จาก Yahoo Finance
+      security:
+        - bearerAuth: []
+      tags:
+        - API
+      parameters:
+        - in: path
+          name: symbol
+          required: true
+          schema:
+            type: string
+            example: EOSE
+          description: สัญลักษณ์หุ้น (ticker symbol) เช่น AAPL, MSFT, V เป็นต้น
+      responses:
+        200:
+          description: ข้อมูลราคาหุ้นและสถานะตลาด
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    type: object
+                    properties:
+                      symbol:
+                        type: string
+                        example: EOSE
+                      longName:
+                        type: string
+                        example: Eos Energy Enterprises, Inc.
+                      shortName:
+                        type: string
+                        example: Eos Energy Enterprises, Inc.
+                      exchangeName:
+                        type: string
+                        example: NCM
+                      fullExchangeName:
+                        type: string
+                        example: NasdaqCM
+                      instrumentType:
+                        type: string
+                        example: EQUITY
+                      marketStatus:
+                        type: string
+                        enum: [PRE, REGULAR, POST, CLOSED]
+                        example: REGULAR
+                      regularMarketPrice:
+                        type: number
+                        example: 6.065
+                      regularMarketChange:
+                        type: number
+                        example: -0.305
+                      regularMarketChangePercent:
+                        type: number
+                        example: -4.79
+                      preMarketPrice:
+                        type: number
+                        example: 6.05
+                      preMarketPriceChange:
+                        type: number
+                        example: -0.32
+                      preMarketChangePercent:
+                        type: number
+                        example: -5.02
+                      chartPreviousClose:
+                        type: number
+                        example: 6.37
+                      priceHint:
+                        type: integer
+                        example: 2
+                      firstTradeDate:
+                        type: integer
+                        example: 1604327400
+                      regularMarketTime:
+                        type: integer
+                        example: 1755008347
+                      gmtoffset:
+                        type: integer
+                        example: -14400
+                      timezone:
+                        type: string
+                        example: EDT
+                      exchangeTimezoneName:
+                        type: string
+                        example: America/New_York
+                      currency:
+                        type: string
+                        example: USD
+                  error:
+                    type: object
+                    nullable: true
+                    example: null
+        500:
+          description: เกิดข้อผิดพลาดในการดึงข้อมูล
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Fetch error
+
+  news:
+    get:
+      summary: Get news for stock symbol
+      security:
+        - bearerAuth: []
+      tags:
+        - API
+      parameters:
+        - in: query
+          name: symbol
+          required: true
+          schema:
+            type: string
+          description: Stock symbol (e.g. NVDA)
+          example: NVDA
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: string
+            default: 10
+          description: News count limit
+      responses:
+        200:
+          description: Stock news data successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  news:
+                    explains: []
+                    count: number
+                    quotes: [...]
+                    error: null
+        400:
+          description: Missing required symbol parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: No symbol
+        500:
+          description: Server error when fetching data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Server Data Error
+
+  search:
+    get:
+      summary: Search stock symbols
+      tags:
+        - API
+      responses:
+        200:
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+
+  search_autocomplete:
+    get:
+      summary: Auto-complete search for stock symbols
+      tags:
+        - API
+      responses:
+        200:
+          description: Auto-complete results
+          content:
+            application/json:
+              schema:
+                type: object
