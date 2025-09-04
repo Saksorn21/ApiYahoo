@@ -36,8 +36,8 @@ paths:
     $ref: 'paths/admin.yaml#/paths/memberships_userId'
   /admin/tokens:
     $ref: 'paths/admin.yaml#/paths/tokens'
-    /admin/tokens/{id}:
-      $ref: 'paths/admin.yaml#/paths/tokens_id'
+  /admin/tokens/{id}:
+    $ref: 'paths/admin.yaml#/paths/token_id'
   /admin/logs:
     $ref: 'paths/admin.yaml#/paths/logs'
   /admin/autocomplete:
