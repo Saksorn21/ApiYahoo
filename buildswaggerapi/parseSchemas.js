@@ -34,8 +34,8 @@ const parseSchemas = async (req, res) => {
         return res.status(400).json({ error: "Invalid schema refs" });
       };
     res.setHeader("Content-Type", "application/json");
-    const parse =stringify(derefSchema)
-    res.json(JSON.parse(parse));
+    
+    res.json(stringify(derefSchema));
   } catch (err) {
     console.error("parseSchemas error:", err);
     res.status(500).json({ error: "Failed to load schema" });
