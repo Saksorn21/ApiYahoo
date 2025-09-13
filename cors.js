@@ -35,8 +35,10 @@ export const corsOptionsDelegate = (req, callback) => {
     } else {
       corsOptions = { origin: false };
     }
-  } else {
+  }else if (req.path.startsWith("/buildapi")) {
     corsOptions = { origin: true };
+  } else {
+    corsOptions = { origin: false };
   }
 
   callback(null, corsOptions);

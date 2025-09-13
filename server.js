@@ -10,6 +10,7 @@ import adminRouter from './routers/admin.js'
 import apiRouter from './routers/apiRouter.js'
 import swaggerUi from "swagger-ui-express";
 import generateSnippet from "./buildswaggerapi/openAPISnippet.js"
+import parseSchemas from "./buildswaggerapi/parseSchemas.js"
 import { corsOptionsDelegate } from "./cors.js"
 import cookieParser from "cookie-parser";
 
@@ -39,7 +40,8 @@ app.use(cookieParser());
 app.set("trust proxy", 1)
 logger.setSocketIO(io)
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.post("/generate-snippet", generateSnippet)
+app.post("/buildapi/generate-snippet", generateSnippet)
+app.post("/buildapi/schema/:version", parseSchemas)
 app.use(generalLimiter)
 
 app.use(logConsole)

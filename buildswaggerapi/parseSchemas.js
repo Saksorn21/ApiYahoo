@@ -8,7 +8,7 @@ const parseSchemas = async (req, res) => {
     const { version } = req.params;
 
     // map version → ไฟล์ schema
-    const fileMap: Record<string, string> = {
+    const fileMap = {
       "v2": "openapi-2.0.json",
       "v3.0": "openapi-3.0.json",
       "v3.1": "openapi-3.1.json",
@@ -32,4 +32,5 @@ const parseSchemas = async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Server running on port 3000"));
+export default parseSchemas
+
