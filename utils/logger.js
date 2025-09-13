@@ -14,11 +14,15 @@ class Logger {
     this.message = undefined
     this.isFinish = false
     this.finishMessage = ''
+    this.debugMode = false
   }
   setSocketIO(io) {
   this.io = io
     console.log(chalk.rgb(37, 194, 160).bold('[Socket.io]') + ' connect Id: ' + this.io.id)
     
+  }
+  setDebug(isDebug){
+    this.debugMode = isDebug
   }
   formatStatusCode(){
     let code = this.statusCode
@@ -121,6 +125,7 @@ class Logger {
     if (this.isFinish) {
       this.isFinish = false;
       const result = this.finishMessage;
+      debug(result)
       console[result ? 'info' : 'log'](result); // console.log หรือ console.info ตามที่คุณมี
 
       // ส่ง log ไป socket.io ด้วย ถ้ามี
@@ -146,7 +151,7 @@ class Logger {
     this.finishMessage = '';
   }
   debug(...messages) {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' || this.debugMode) {
       // เวลาประเทศไทย (Asia/Bangkok)
       const timestamp = chalk.gray(
         `[${new Date().toLocaleString('th-TH', {

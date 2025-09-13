@@ -27,7 +27,11 @@ export const startMode = (req, res, next) => {
   next();
       }
     
-
+export const checkHeaderDebug = (req, res, next) => {
+  const debugHeader = req.headers['x-debug']
+  logger.setDebug(debugHeader === 'true')
+  next()
+}
 const findUserByToken = async (token) => {
   const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET)
   const user = await User.findById(decoded.id).lean().select("-password")

@@ -14,7 +14,7 @@ import parseSchemas from "./buildswaggerapi/parseSchemas.js"
 import { corsOptionsDelegate } from "./cors.js"
 import cookieParser from "cookie-parser";
 
-import { logMiddleware, authFromBearer, startMode } from './auth/middleware.js'
+import { logMiddleware, authFromBearer, checkHeaderDebug } from './auth/middleware.js'
 import { logConsole } from './auth/loggerMiddleware.js'
 import logger from './utils/logger.js'
 import { initSocket } from './socket.js';
@@ -40,6 +40,7 @@ app.use(cookieParser());
 app.set("trust proxy", 1)
 logger.setSocketIO(io)
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use(checkHeaderDebug)
 app.post("/buildapi/generate-snippet", generateSnippet)
 app.get("/buildapi/schema/:version", parseSchemas)
 app.use(generalLimiter)
