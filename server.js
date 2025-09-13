@@ -41,7 +41,7 @@ app.set("trust proxy", 1)
 logger.setSocketIO(io)
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.post("/buildapi/generate-snippet", generateSnippet)
-app.post("/buildapi/schema/:version", parseSchemas)
+app.get("/buildapi/schema/:version", parseSchemas)
 app.use(generalLimiter)
 
 app.use(logConsole)
