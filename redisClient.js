@@ -13,7 +13,7 @@ const devconnet = {
 const isProd = process.env.NODE_ENV === "production" ?new Redis(process.env.REDIS_URL, {
   maxRetriesPerRequest: null,
     enableReadyCheck: false
-}) : new Redis(devconnet)
+}) : new Redis(process.env.REDIS_URL)
 
 const redis = isProd
 
