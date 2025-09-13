@@ -30,7 +30,7 @@ const parseSchemas = async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Failed to load schema" });
   }
-});
+}
 
 export default parseSchemas
 
