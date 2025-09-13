@@ -28,7 +28,7 @@ const parseSchemas = async (req, res) => {
       let derefSchema;
       try {
         derefSchema = await $RefParser.dereference(rawSchema);
-        console.log("ref", derefSchema)
+        
       } catch (err) {
         console.error("Dereference error:", err);
         return res.status(400).json({ error: "Invalid schema refs" });
