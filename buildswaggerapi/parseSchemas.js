@@ -35,7 +35,7 @@ const parseSchemas = async (req, res) => {
       };
     res.setHeader("Content-Type", "application/json");
     
-    res.json(stringify(derefSchema));
+    res.send(stringify(derefSchema));
   } catch (err) {
     console.error("parseSchemas error:", err);
     res.status(500).json({ error: "Failed to load schema" });
