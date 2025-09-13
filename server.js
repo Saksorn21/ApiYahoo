@@ -9,7 +9,7 @@ import { generalLimiter, rateLimitMembership } from "./auth/rateLimit.js";
 import adminRouter from './routers/admin.js'
 import apiRouter from './routers/apiRouter.js'
 import swaggerUi from "swagger-ui-express";
-import generateSnippet from "./openAPISnippet.js"
+import generateSnippet from "./buildswaggerapi/openAPISnippet.js"
 import { corsOptionsDelegate } from "./cors.js"
 import cookieParser from "cookie-parser";
 

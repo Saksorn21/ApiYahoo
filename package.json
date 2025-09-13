@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^14.2.1",
     "@types/node": "^22.13.11",
     "axios": "^1.11.0",
     "bcrypt": "^6.0.0",
