@@ -1,13 +1,15 @@
-
-import $RefParser from "@apidevtools/json-schema-ref-parser";
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
+import { fileURLToPath } from "url";
+import $RefParser from "@apidevtools/json-schema-ref-parser";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const parseSchemas = async (req, res) => {
   try {
     const { version } = req.params;
 
-    // map version → ไฟล์ schema
     const fileMap = {
       "v2": "openapi-2.0.json",
       "v3.0": "openapi-3.0.json",
@@ -20,17 +22,22 @@ const parseSchemas = async (req, res) => {
     }
 
     const filePath = path.join(__dirname, "schemas", fileName);
-    const rawSchema = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    const rawSchema = JSON.parse(await fs.readFile(filePath, "utf-8"));
 
-    // dereference schema
-    const derefSchema = await $RefParser.dereference(rawSchema);
+      let derefSchema;
+      try {
+        derefSchema = await $RefParser.dereference(rawSchema);
+      } catch (err) {
+        console.error("Dereference error:", err);
+        return res.status(400).json({ error: "Invalid schema refs" });
+      };
 
     res.json(derefSchema);
   } catch (err) {
-    console.error(err);
+    console.error("parseSchemas error:", err);
     res.status(500).json({ error: "Failed to load schema" });
   }
-}
+};
 
-export default parseSchemas
+export default parseSchemas;
 
